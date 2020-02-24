@@ -1,5 +1,6 @@
 data cleaning
  - combine movies with duplicate titles but different ids in this dataset and report those movies in log
+   - 18 out of 1681 movies are shown in data twice
  - remove movies do not have reviews and report those movies in log
  - store cleaned movie (and data) in both txt and python-readable formats
 
