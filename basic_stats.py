@@ -15,9 +15,9 @@ def movie_rating_counter(movie_id_list, data_array):
     Parameters
     ----------
     movie_id_list : list
-        DESCRIPTION.
+        Length N list of ID's of movie to count ratings.
     data_array : numpy array
-        (N, 1) array of movie ID's where N = number of (non-duplicate) movies.
+        Array of [User Id, Movie Id, Rating]
 
     Returns
     -------
@@ -41,6 +41,7 @@ def movie_rating_counter(movie_id_list, data_array):
     for row in data_array:
         movie_id = int(row[1])
         rating = int(row[2])
-        movie_rating[id_index[movie_id],rating] += 1
+        if movie_id in id_index:
+            movie_rating[id_index[movie_id],rating] += 1
         
     return movie_rating
