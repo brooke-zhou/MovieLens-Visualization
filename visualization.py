@@ -1,4 +1,5 @@
 import matrixFactorMethods as factor
+import ImplicitImplementation as implicit
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,14 +9,15 @@ import basic_stats as stat
 
 ## import original data and clean
 #path_to_original_movies_file = 'data/movies.txt'
-#path_to_original_data='data/data.txt'
+#path_to_original_data='data/train.txt'
 #movies, duplicate_count, replace_table = cleaner.clean_movies(path_to_original_movies_file, save=True)
-#data = cleaner.clean_data(replace_table, path_to_original_data, save_new_data='npy')
+#data = cleaner.clean_data(replace_table, path_to_original_data, save_new_data='txt')
 
 # or import cleaned data
 path_to_clean_movies_file = 'data/movies_nodup.txt'
 path_to_clean_data_file = 'data/data_clean.npy'
 movies = cleaner.read_movie_as_dataframe(path_to_clean_movies_file)
+print(len(movies))
 data = np.load(path_to_clean_data_file)
 
 # create movie title-ID lookup dictionary
@@ -32,7 +34,7 @@ movie_id_list = movies['Movie Id'].tolist()
 movie_rating = stat.movie_rating_counter(movie_id_list, data)
 
 ###################################################
-# VMakes a plot with given data and saves it to fname
+# Makes a plot with given data and saves it to fname
 ###################################################
 def make_plot(A1, A2, names, fname, title):
     plt.figure()
@@ -52,7 +54,9 @@ def make_plot(A1, A2, names, fname, title):
 ###################################################
 def visualizeBellsWhistles():
     # Get 2D projection of U and V matrices
-    Uproj, Vproj = factor.originalSVDwithBellsWhistles()
+    #Uproj, Vproj = factor.originalSVDwithBellsWhistles()
+    Uproj, Vproj = implicit.tryThis()
+    print(Vproj.shape)
     
     # create an array for [ID, avg_rating, n_ratings]
     id_rating_n = np.zeros([len(movie_rating),3])
@@ -83,7 +87,7 @@ def visualizeBellsWhistles():
         proj = Vproj[:,int(movie_popularity[i,0])]
         A1.append(proj[0])
         A2.append(proj[1])
-    make_plot(A1, A2, names, '10PopVisualization', 'Visualization of Top 10 Popular Movies')
+    make_plot(A1, A2, names, 'out/10PopVisualization', 'Visualization of Top 10 Popular Movies')
     
     ###################
     # Visualize best 10
@@ -111,10 +115,59 @@ def visualizeBellsWhistles():
     names = []
     for i in range(10):
         names.append(id_title_dict[int(best_movies[i,0])])
-        proj = Vproj[:,int(best_movies[i,0])]
+        proj = Vproj[:,(int(best_movies[i,0]) - 1)]
         A1.append(proj[0])
         A2.append(proj[1])
-    make_plot(A1, A2, names, '10BestVisualization', 'Visualization of Top 10 Best Movies')    
+    make_plot(A1, A2, names, 'out/10BestVisualization', 'Visualization of Top 10 Best Movies') 
+    
+    
+    # Comedy and Drama plots
+    plt.figure()
+    comedy_movies = movies.loc[movies["Comedy"] == 1]
+    comedy_movie_id_list = comedy_movies['Movie Id'].tolist()
+    A1C = []
+    A2C = []
+    namesC = []
+    print(len(comedy_movie_id_list))
+    for i in range(len(comedy_movie_id_list)):
+        namesC.append(id_title_dict[comedy_movie_id_list[i]])
+        proj = Vproj[:,(int(comedy_movie_id_list[i]))]
+        A1C.append(proj[0])
+        A2C.append(proj[1])  
+    plt.scatter(A1C, A2C, c='b')
+    #for i, n in enumerate(namesC):
+        #plt.annotate(n, (A1C[i], A2C[i]))    
+    horror_movies = movies.loc[movies["Horror"] == 1]
+    horror_movie_id_list = horror_movies['Movie Id'].tolist()
+    A1H = []
+    A2H = []
+    namesH = []
+    for i in range(len(horror_movie_id_list)):
+        namesH.append(id_title_dict[horror_movie_id_list[i]])
+        proj = Vproj[:,(int(horror_movie_id_list[i]))]
+        A1H.append(proj[0])
+        A2H.append(proj[1])
+    plt.scatter(A1H, A2H, c='r')
+    #for i, n in enumerate(namesH):
+        #plt.annotate(n, (A1H[i], A2H[i]))    
+    musical_movies = movies.loc[movies["Musical"] == 1]
+    musical_movie_id_list = musical_movies['Movie Id'].tolist()
+    A1M = []
+    A2M = []
+    namesM = []
+    for i in range(len(musical_movie_id_list)):
+        namesM.append(id_title_dict[musical_movie_id_list[i]])
+        proj = Vproj[:,(int(musical_movie_id_list[i]))]
+        A1M.append(proj[0])
+        A2M.append(proj[1]) 
+    plt.scatter(A1M, A2M, c='g')
+    #for i, n in enumerate(namesM):
+        #plt.annotate(n, (A1M[i], A2M[i]))
+    plt.xlabel('Axis 1')
+    plt.ylabel('Axis 2')
+    plt.title("Comedy, Horror, and Musical Movies")
+    plt.savefig("out/GenreVis")
+    plt.show()
     
     
     
