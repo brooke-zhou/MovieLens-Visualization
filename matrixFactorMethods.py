@@ -2,22 +2,28 @@ from surprise import SVD
 from surprise import Dataset
 from surprise import Reader
 from surprise.model_selection import cross_validate
+from surprise import accuracy
+from surprise.model_selection import train_test_split
+from surprise.model_selection import KFold
 
 import pandas as pd
 
 import numpy as np
 import matplotlib.pyplot as plt
 from statistics import mean
-#from sklearn.decomposition import
+from sklearn.decomposition import PCA, TruncatedSVD
+#import implicit
 
 
 
 # Method 1: Off the shelf and recommended method for the class.
-def surpriseSVD(movieLensDataPath = '../data/data.txt'):
+# , movieLensTestPath = '../data/test.txt'
+def surpriseSVD(movieLensDataPath = '../data/data_clean.txt'):
     ''' Basic use of the surprise SVD algorithm. '''
     ''' Params: movieLensDataPath is the path to the movielens data we're looking at. '''
     ''' Note: replace with cleaned data. '''
     ''' We want to return U and V where for a Y of a matrix of movie ratings, Y ~/= U^TV.'''
+
     # Load the data as a pandas data frame, as reading from text didn't quite work at first.
     df = pd.read_csv(movieLensDataPath, sep="\t", header=None)
     df.columns = ["User Id", "Movie Id", "Rating"]
@@ -27,15 +33,71 @@ def surpriseSVD(movieLensDataPath = '../data/data.txt'):
 
     # The columns are User Id, Movie Id, and Rating.
     data = Dataset.load_from_df(df[["User Id", "Movie Id", "Rating"]], reader)
+    # Use the famous SVD algorithm. To fit, we have to convert it to a trainset.
+    algo = SVD()
+    trainset = data.build_full_trainset()
+    algo.fit(trainset)
+    algop = algo.pu
+    algoq = algo.qi
+
+    kf = KFold(n_splits=3)
+    algo = SVD()
+
+    for trainset, testset in kf.split(data):
+        # train and test algorithm.
+        algo.fit(trainset)
+        predictions = algo.test(testset)
+
+        # Compute and print Root Mean Squared Error
+        accuracy.rmse(predictions, verbose=True)
+    # Return U (pu) and V (qi)
+    return algop, algoq
+
+    '''# Load the data as a pandas data frame, as reading from text didn't quite work at first.
+    df = pd.read_csv(movieLensTrainPath, sep="\t", header=None)
+    df.columns = ["User Id", "Movie Id", "Rating"]
+
+    # We need the rating scale.
+    reader = Reader(rating_scale=(1, 5))
+
+    # The columns are User Id, Movie Id, and Rating.
+    data = Dataset.load_from_df(df[["User Id", "Movie Id", "Rating"]], reader)
+
+    dfTest = pd.read_csv(movieLensTestPath, sep="\t", header=None)
+    dfTest.columns = ["User Id", "Movie Id", "Rating"]
+
+    # The columns are User Id, Movie Id, and Rating.
+    dataTest = Dataset.load_from_df(dfTest[["User Id", "Movie Id", "Rating"]], reader)
 
     # Use the famous SVD algorithm. To fit, we have to convert it to a trainset.
     trainset = data.build_full_trainset()
     algo = SVD()
     algo.fit(trainset)
-    # Return U (qi) and V (pu)
-    return algo.qi, algo.pu
 
-# Method 2 (next functions): Seem familiar?
+    testset = dataTest.build_anti_testset()
+    # Train the algorithm on the trainset, and predict ratings for the testset
+    algo.fit(trainset)
+    predictions = algo.test(testset)
+    # Then compute RMSE
+    accuracy.rmse(predictions)
+    # Return U (pu) and V (qi)
+    return algo.pu, algo.qi'''
+
+# Method 2
+def sklearnPCA(movieLensTrainPath = '../data/train_clean.txt', movieLensTestPath = '../data/test_clean.txt'):
+    pca = PCA(n_components=2)
+    df = pd.read_csv(movieLensTrainPath, sep="\t", header=None)
+    df.columns = ["User Id", "Movie Id", "Rating"]
+
+    X = df.to_numpy()
+    pca.fit(X)
+    print(pca.components_)
+
+    tSVD = TruncatedSVD()
+    tSVD.fit(X)
+    print(tSVD.components_)
+
+# Method 3 (next functions): Seem familiar?
 
 # The final function is the main one to run!
 def grad_U(Ui, Yij, Vj, meanYs, a_i, b_j, reg, eta):
@@ -296,7 +358,7 @@ def Vtrain_model(M, N, K, eta, reg, Y, eps=0.0001, max_epochs=300):
     return U, V, err
 
 
-def naiveMinimization(movieLensDataTrainPath='../data/train.txt', movieLensDataTestPath='../data/test.txt'):
+def naiveMinimization(movieLensDataTrainPath='../data/train_clean.txt', movieLensDataTestPath='../data/test_clean.txt'):
     dfTrain = pd.read_csv(movieLensDataTrainPath, sep="\t", header=None)
     dfTrain.columns = ["User Id", "Movie Id", "Rating"]
 
@@ -388,7 +450,7 @@ def originalSVDwithBellsWhistles():
         projV[i] = projV[i] / max(projV[i])
     for i in range(len(projU)):
         projU[i] = projU[i] / max(projU[i])
-    dfTest = pd.read_csv('../data/test.txt', sep="\t", header=None)
+    dfTest = pd.read_csv('../data/test_clean.txt', sep="\t", header=None)
     dfTest.columns = ["User Id", "Movie Id", "Rating"]
 
     Y_test = dfTest.to_numpy()
@@ -396,4 +458,14 @@ def originalSVDwithBellsWhistles():
     print(get_err(projU.T, projV.T, Y_test, a, b))
     return projU, projV
 
+# Original SVD
 originalSVDwithBellsWhistles()
+# Surprise SVD
+'''algop, algoq = surpriseSVD()
+dfTest = pd.read_csv('../data/test_clean.txt', sep="\t", header=None)
+dfTest.columns = ["User Id", "Movie Id", "Rating"]
+
+Y_test = dfTest.to_numpy()
+print(get_err2(algop, algoq, Y_test))'''
+
+#sklearnPCA()
