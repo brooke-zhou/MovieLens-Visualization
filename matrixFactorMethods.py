@@ -15,6 +15,43 @@ from sklearn.decomposition import PCA, TruncatedSVD
 #import implicit
 
 
+def tryThis(U, V):
+    #U, V = implicitModel()
+    #U = np.float64(U)
+    #V = np.float64(V)
+    U = U.T
+    V = V.T
+    print(V)
+    # U = np.array(U)
+    # V = np.array(V)
+    for i in range(len(V)):
+        V[i] = V[i] - mean(V[i])
+    for i in range(len(U)):
+        U[i] = U[i] - mean(U[i])
+    # SVD of V!
+    dfTest = pd.read_csv('../data/test_clean.txt', sep="\t", header=None)
+    dfTest.columns = ["User Id", "Movie Id", "Rating"]
+
+    Y_test = dfTest.to_numpy()
+    print(get_err2(U.T, V.T, Y_test))
+    A, S, B = np.linalg.svd(V)
+    A = A.T
+    # Use the first 2 cols for work
+    Asub = A[:, :2]
+
+    projU = np.dot(Asub.T, U)
+    projV = np.dot(Asub.T, V)
+
+    # Rescale dimensions to compress the image
+    for i in range(len(projV)):
+        projV[i] = projV[i] / max(projV[i])
+    for i in range(len(projU)):
+        projU[i] = projU[i] / max(projU[i])
+
+
+    print(get_err2(projU.T, projV.T, Y_test))
+    return projU, projV
+
 
 # Method 1: Off the shelf and recommended method for the class.
 # , movieLensTestPath = '../data/test.txt'
@@ -83,19 +120,39 @@ def surpriseSVD(movieLensDataPath = '../data/data_clean.txt'):
     # Return U (pu) and V (qi)
     return algo.pu, algo.qi'''
 
+#def linalgNorm(movieLensTrainPath = '../data/train_clean.txt', movieLensTestPath = '../data/test_clean.txt'):
+
+
 # Method 2
 def sklearnPCA(movieLensTrainPath = '../data/train_clean.txt', movieLensTestPath = '../data/test_clean.txt'):
-    pca = PCA(n_components=2)
+
+    pca = PCA(n_components=2, svd_solver='full')
     df = pd.read_csv(movieLensTrainPath, sep="\t", header=None)
     df.columns = ["User Id", "Movie Id", "Rating"]
-
     X = df.to_numpy()
-    pca.fit(X)
-    print(pca.components_)
+    M = max(X[:, 0]).astype(int)
+    N = max(X[:, 1]).astype(int)
 
+
+    newTrains = np.zeros((M, N))
+    # print(len(newTrains))
+    # print(len(newTrains[0]))
+    for y in X:
+        i, j, yij = y
+        i = i - 1
+        j = j - 1
+        # print(newTrains[i])
+        newTrains[i][j] = yij
+    U, S, Vh = np.linalg.svd(newTrains)
+    newTrains = np.array(newTrains)
+    pca.fit(newTrains)
     tSVD = TruncatedSVD()
-    tSVD.fit(X)
-    print(tSVD.components_)
+    tSVD.fit(newTrains)
+    return U, Vh, pca.components_[0], pca.components_[1], tSVD.components_[0], tSVD.components_[1]
+    #print(len(pca.components_[0]))
+
+
+    #print(len(tSVD.components_))
 
 # Method 3 (next functions): Seem familiar?
 
@@ -459,7 +516,7 @@ def originalSVDwithBellsWhistles():
     return projU, projV
 
 # Original SVD
-originalSVDwithBellsWhistles()
+#originalSVDwithBellsWhistles()
 # Surprise SVD
 '''algop, algoq = surpriseSVD()
 dfTest = pd.read_csv('../data/test_clean.txt', sep="\t", header=None)
@@ -468,4 +525,10 @@ dfTest.columns = ["User Id", "Movie Id", "Rating"]
 Y_test = dfTest.to_numpy()
 print(get_err2(algop, algoq, Y_test))'''
 
-#sklearnPCA()
+#Ui, Vi, V, U, V1, U1 = sklearnPCA()
+#print(len(Ui[0]))
+#print(len(Vi[0]))
+#tryThis(Ui, Vi)
+#print(V[0])
+#tryThis(U, V)
+#tryThis(U1, V1)

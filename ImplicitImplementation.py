@@ -16,7 +16,7 @@ def implicitModel(movieLensDataTrainPath='../data/train_clean.txt', movieLensDat
     train = dfTrain.to_numpy()
 
     # initialize a model
-    model = implicit.als.AlternatingLeastSquares(factors=20)
+    model = implicit.als.AlternatingLeastSquares(factors=25, iterations=400, regularization=0.01)
     # print(train)
     M = max(max(train[:, 0]), max(test[:, 0])).astype(int)
     N = max(max(train[:, 1]), max(test[:, 1])).astype(int)
@@ -74,7 +74,7 @@ def get_err2(U, V, Y, reg=0.0):
 
 
 def Vtrain(M, N, K, eta, reg, Y, max_epochs=300):
-    model = implicit.als.AlternatingLeastSquares(factors=20)
+    model = implicit.als.AlternatingLeastSquares(factors=25, iterations=400, regularization=0.01)
     # print(train)
 
     newTrains = np.array(Y)
