@@ -53,7 +53,8 @@ def read_movie_as_dataframe(path_to_movies_file='../data/movies.txt'):
 
 def clean_movies(path_to_movies_file='../data/movies.txt', save=True):
     """
-    Read list of movies, then detect and remove duplicates.
+    Read list of movies, detect and remove duplicates, then re-index all 
+    movies from 0 to N_non_dup.
 
     Parameters
     ----------
@@ -83,7 +84,7 @@ def clean_movies(path_to_movies_file='../data/movies.txt', save=True):
     
     # store duplicate ID and titles
     duplicate_count = {}
-    replace_table = {}
+    dup_replace_table = {}
     for index, row in duplicate_movies.iterrows():
         movie_id = row[0]
         movie_title = row[1]
@@ -92,12 +93,17 @@ def clean_movies(path_to_movies_file='../data/movies.txt', save=True):
             replacement = movie_id
         else:
             duplicate_count[movie_title] += 1
-            replace_table[movie_id] = replacement
+            dup_replace_table[movie_id] = replacement
         
     # store a new dataframe of movies w/o duplicates
     non_duplicate_movies = movie_data.drop_duplicates(['Movie Title'],
                                                       keep='first',
                                                       ignore_index=True)
+    # create a dict where keys are old movie IDs and values are re-indexed IDs
+    replace_table = {}
+    for movie_index in range(len(non_duplicate_movies)):
+        replace_table[non_duplicate_movies.iloc[movie_index,0]] = movie_index
+        non_duplicate_movies.at[movie_index, 'Movie Id'] = movie_index
     
     # save the new dataframe
     if save:
