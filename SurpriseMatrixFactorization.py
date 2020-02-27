@@ -32,8 +32,10 @@ def surpriseSVD(DataPath = '../data/data_clean.txt',
         verbose=verbose)
     algo.fit(trainset)
 
-    # Return U (qi),  V (pu), bias of U (bu) and bias of V (bi)
-    return algo.qi, algo.pu, algo.bu, algo.bi
+    # # Return V (qi),  U (pu), bias of U (bu) and bias of V (bi)
+    # return algo.qi, algo.pu, algo.bu, algo.bi
+    # Return V (qi),  U (pu)
+    return algo.qi, algo.pu
 
 
 ################################################################
@@ -94,7 +96,8 @@ def surpriseSVDpp(DataPath = '../data/data_clean.txt',
     algo.fit(trainset)
 
     # Return U (qi) V (pu), biases of U and V and the (implicit) item factors
-    return algo.qi, algo.pu, algo.bu, algo.bi, algo.yj
+    # return algo.qi, algo.pu, algo.bu, algo.bi, algo.yj
+    return algo.qi, algo.pu
 
 
 ####################################

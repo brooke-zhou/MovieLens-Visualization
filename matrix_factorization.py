@@ -13,32 +13,32 @@ import matplotlib.pyplot as plt
 import data_cleaning as cleaner
 import SurpriseMatrixFactorization as sp
 
-# # import original data and clean (only need to run once if you store the cleaned files)
-# path_to_original_movies_file = '../data/movies.txt'
-# path_to_original_data='../data/data.txt'
-# movies, duplicate_count, replace_table = \
-#     cleaner.clean_movies(path_to_original_movies_file, save=True)
-# data = cleaner.clean_data(replace_table, path_to_original_data, save_new_data='txt')
-# path_to_train_data='../data/train.txt'
-# train_data = cleaner.clean_data(replace_table, path_to_train_data, save_new_data='txt')
-# path_to_test_data='../data/test.txt'
-# test_data = cleaner.clean_data(replace_table, path_to_test_data, save_new_data='txt')
+# import original data and clean (only need to run once if you store the cleaned files)
+path_to_original_movies_file = '../data/movies.txt'
+path_to_original_data='../data/data.txt'
+movies, duplicate_count, replace_table = \
+    cleaner.clean_movies(path_to_original_movies_file, save=True)
+data = cleaner.clean_data(replace_table, path_to_original_data, save_new_data='txt')
+path_to_train_data='../data/train.txt'
+train_data = cleaner.clean_data(replace_table, path_to_train_data, save_new_data='txt')
+path_to_test_data='../data/test.txt'
+test_data = cleaner.clean_data(replace_table, path_to_test_data, save_new_data='txt')
 
-path_to_test_data='../data/test_clean.txt'
-test_data = np.loadtxt(path_to_test_data)
+# path_to_test_data='../data/test_clean.txt'
+# test_data = np.loadtxt(path_to_test_data)
+
 
 ##############
 # biased SVD #
 ##############
 
 # Step 1: learn U and V by Matrix Factorization (Y ~ U^T V)
-V, U, _, _ = sp.surpriseSVD(DataPath = '../data/data_clean.txt',
+V, U = sp.surpriseNMF(DataPath = '../data/data_clean.txt',
                             n_factors=100, n_epochs=10, 
                             lr_all=0.005, reg_all=0.02)
 
-# Step 2:evaluate test error
+# Step 2: evaluate test error
 test_err = 0
-# UT = U.transpose()
 for line in test_data:
     user = int(line[0])
     movie = int(line[1])
