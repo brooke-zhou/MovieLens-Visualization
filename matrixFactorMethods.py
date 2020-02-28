@@ -433,6 +433,43 @@ def originalSVDwithBellsWhistles(K=10):
     print(get_err(projU.T, projV.T, Y_test, a, b))
     return projU, projV
 
+# Method 3: Off the shelf and recommended method for the class.
+# This is the initial implementation as a baseline, not one we ended up using.
+def surpriseSVD(movieLensDataPath='../data/data_clean.txt'):
+    ''' Basic use of the surprise SVD algorithm. '''
+    ''' Params: movieLensDataPath is the path to the movielens data we're looking at. '''
+    ''' Note: replace with cleaned data. '''
+    ''' We want to return U and V where for a Y of a matrix of movie ratings, Y ~/= U^TV.'''
+
+    # Load the data as a pandas data frame, as reading from text didn't quite work at first.
+    df = pd.read_csv(movieLensDataPath, sep="\t", header=None)
+    df.columns = ["User Id", "Movie Id", "Rating"]
+
+    # We need the rating scale.
+    reader = Reader(rating_scale=(1, 5))
+
+    # The columns are User Id, Movie Id, and Rating.
+    data = Dataset.load_from_df(df[["User Id", "Movie Id", "Rating"]], reader)
+    # To fit to the SVD algorithm, we have to convert it to a trainset.
+    algo = SVD()
+    trainset = data.build_full_trainset()
+    algo.fit(trainset)
+    # U and V!
+    algop = algo.pu
+    algoq = algo.qi
+
+    # Simple crossvalidation
+    kf = KFold(n_splits=3)
+    algo = SVD()
+    for trainset, testset in kf.split(data):
+        # train and test algorithm.
+        algo.fit(trainset)
+        predictions = algo.test(testset)
+        # Compute and print Root Mean Squared Error
+        accuracy.rmse(predictions, verbose=True)
+    # Return U (pu) and V (qi)
+    return algop, algoq
+
 
 # Original SVD
 originalSVD()
