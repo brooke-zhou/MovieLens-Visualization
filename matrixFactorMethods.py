@@ -412,7 +412,7 @@ def Vtrain_model(M, N, K, eta, reg, Y, eps=0.0001, max_epochs=300):
             if epoch == 0:
                 step = abs(err - step)
 
-    return U, V, err
+    return U.T, V.T, err
 
 
 def naiveMinimization(movieLensDataTrainPath='../data/train_clean.txt', movieLensDataTestPath='../data/test_clean.txt'):
@@ -457,10 +457,78 @@ def SVDofV(oldV):
     #print("Y")
     #print(Y[0][0])
     # Use to compute Ein and Eout
-    A, B, err = Vtrain_model(M, N, K, eta, reg, Y, max_epochs=300)
+    A, B, err = Vtrain_model(M, N, K, eta, reg, Y, max_epochs=0)
     print(err)
     return A, B
 
+def originalSVD(movieLensDataTrainPath='../data/train_clean.txt', movieLensDataTestPath='../data/test_clean.txt'):
+    dfTrain = pd.read_csv(movieLensDataTrainPath, sep="\t", header=None)
+    dfTrain.columns = ["User Id", "Movie Id", "Rating"]
+
+    dfTest = pd.read_csv(movieLensDataTestPath, sep="\t", header=None)
+    dfTest.columns = ["User Id", "Movie Id", "Rating"]
+
+    Y_test = dfTest.to_numpy()
+    Y_train = dfTrain.to_numpy()
+
+    M = max(max(Y_train[:, 0]), max(Y_test[:, 0])).astype(int)  # users
+    N = max(max(Y_train[:, 1]), max(Y_test[:, 1])).astype(int)  # movies
+    print("Factorizing with ", M, " users, ", N, " movies.")
+    # Ks = [10, 20, 30, 50, 100]
+    K = 20
+    reg = 0.0
+    eta = 0.03  # learning rate
+
+    # Use to compute Ein and Eout
+    U, V, err = Vtrain_model(M, N, K, eta, reg, Y_train, max_epochs=0)
+    print(err)
+    #print(get_err2(U, V, Y_test))
+    # Center V as each row should have 0 mean.
+    # A TA said this was a good idea.
+    for i in range(len(V)):
+        V[i] = V[i] - mean(V[i])
+    for i in range(len(U)):
+        U[i] = U[i] - mean(U[i])
+    # SVD of V!
+    # They're already transposed!
+    # print("Transpose")
+    #V = V.T
+    #U = U.T
+    print("V shape")
+    print(V.shape)
+    A, B = SVDofV(V)
+    print("A shape")
+    print(A.shape)
+    print(B.shape)
+    # Use the first 2 cols for work
+    # print(U.shape)
+    # print(V.shape)
+    '''print("A shape, B shape")
+    print(A.shape)
+    print(B.shape)
+    print("Shapes")
+    print(U.shape)
+    print(V.shape)
+    print(A[:, :2].shape)'''
+    Asub = A[:, :2]
+    print("A sub shape")
+    print(Asub.shape)
+    print(U.shape)
+    print(V.shape)
+    projU = np.dot(Asub.T, U)
+    projV = np.dot(Asub.T, V)
+    '''print("Proj Shapes")
+    print(projU.shape)
+    print(projV.shape)'''''
+    # Rescale dimensions to compress the image
+    for i in range(len(projV)):
+        projV[i] = projV[i] / max(projV[i])
+    for i in range(len(projU)):
+        projU[i] = projU[i] / max(projU[i])
+    print(get_err2(U.T, V.T, Y_test))
+    print(get_err2(projU.T, projV.T, Y_test))
+    return projU, projV
+    #return U, V, err
 
 # Method
 def originalSVDwithBellsWhistles():
@@ -516,7 +584,7 @@ def originalSVDwithBellsWhistles():
     return projU, projV
 
 # Original SVD
-#originalSVDwithBellsWhistles()
+originalSVD()
 # Surprise SVD
 '''algop, algoq = surpriseSVD()
 dfTest = pd.read_csv('../data/test_clean.txt', sep="\t", header=None)
