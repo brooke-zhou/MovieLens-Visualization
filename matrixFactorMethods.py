@@ -551,7 +551,7 @@ def originalSVDwithBellsWhistles():
     # Use the first 2 cols for work
     #print(U.shape)
     #print(V.shape)
-    A = A.T
+    #A = A.T
     #B = B.T
     '''print("A shape, B shape")
     print(A.shape)
