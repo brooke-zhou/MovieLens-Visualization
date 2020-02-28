@@ -44,7 +44,7 @@ def make_plot(A1, A2, names, fname, title):
     plt.xlabel('Axis 1')
     plt.ylabel('Axis 2')
     plt.title(title)
-    # plt.savefig(fname)
+    plt.savefig(fname)
     plt.show()
     
 
@@ -54,25 +54,61 @@ def make_plot(A1, A2, names, fname, title):
 #############################
 import SurpriseMatrixFactorization as sp
 
-n_factors=100
-n_epochs=400
-reg_pu=0.06
-reg_qi=0.06
-reg_bu=0.02
-reg_bi=0.02
-lr_bu=0.005
-lr_bi=0.005
-biased=False
-Vproj, Uproj, train_err = sp.surpriseNMF(mode='visualization',
-                                n_factors=n_factors, 
-                                n_epochs=n_epochs,
-                                reg_pu=reg_pu,
-                                reg_qi=reg_qi,
-                                reg_bu=reg_bu,
-                                reg_bi=reg_bi,
-                                lr_bu=lr_bu,
-                                lr_bi=lr_bi,
-                                biased=biased)
+# # NMF
+# n_factors=100
+# n_epochs=400
+# reg_pu=0.06
+# reg_qi=0.06
+# reg_bu=0.02
+# reg_bi=0.02
+# lr_bu=0.005
+# lr_bi=0.005
+# biased=False
+# Vproj, Uproj, train_err = sp.surpriseNMF(mode='visualization',
+#                                 n_factors=n_factors, 
+#                                 n_epochs=n_epochs,
+#                                 reg_pu=reg_pu,
+#                                 reg_qi=reg_qi,
+#                                 reg_bu=reg_bu,
+#                                 reg_bi=reg_bi,
+#                                 lr_bu=lr_bu,
+#                                 lr_bi=lr_bi,
+#                                 biased=biased)
+
+# SVD++
+n_factors=20
+n_epochs=20
+lr_all=0.02
+reg_all=0.1
+Vproj, Uproj, train_err = sp.surpriseSVDpp(mode='visualization',
+                                  n_factors=n_factors, 
+                                  n_epochs=n_epochs,
+                                  lr_all=lr_all, 
+                                  reg_all=reg_all)
+
+# # PMF (SVD w/o bias)
+# n_factors=200
+# n_epochs=20
+# lr_all=0.005
+# reg_all=0.02
+# Vproj, Uproj, train_err = sp.surprisePMF(mode='visualization',
+#                                   n_factors=n_factors, 
+#                                   n_epochs=n_epochs,
+#                                   lr_all=lr_all, 
+#                                   reg_all=reg_all)
+
+# # SVD (biased)
+# n_factors=100
+# n_epochs=20
+# lr_all=0.005
+# reg_all=0.02
+# Vproj, Uproj, train_err = sp.surpriseSVD(mode='visualization',
+#                                   n_factors=n_factors, 
+#                                   n_epochs=n_epochs,
+#                                   lr_all=lr_all, 
+#                                   reg_all=reg_all)
+
+
 
 # Rescale dimensions to compress the image
 for i in range(len(Vproj)):
@@ -80,9 +116,6 @@ for i in range(len(Vproj)):
 for i in range(len(Uproj)):
     Uproj[i] = Uproj[i] / max(Uproj[i])
         
-
-print(Vproj.shape)
-
 def visualize_V():
     
     # create an array for [ID, avg_rating, n_ratings]
@@ -114,7 +147,7 @@ def visualize_V():
         proj = Vproj[:,int(movie_popularity[i,0])]
         A1.append(proj[0])
         A2.append(proj[1])
-    make_plot(A1, A2, names, 'out/10PopVisualization', 'Visualization of Top 10 Popular Movies')
+    make_plot(A1, A2, names, '../plots/10PopVisualization', 'Visualization of Top 10 Popular Movies')
     
     ###################
     # Visualize best 10
@@ -145,55 +178,44 @@ def visualize_V():
         proj = Vproj[:,(int(best_movies[i,0]))]
         A1.append(proj[0])
         A2.append(proj[1])
-    make_plot(A1, A2, names, 'out/10BestVisualization', 'Visualization of Top 10 Best Movies') 
+    make_plot(A1, A2, names, '../plots/10BestVisualization', 'Visualization of Top 10 Best Movies') 
     
     
-    # Comedy and Drama plots
+    
+    ###################
+    # Visualize 3 genres
+    ################################################
+    # all genres = [Unknown, Action, Adventure, 
+    #               Animation, Childrens, Comedy, 
+    #               Crime, Documentary, Drama, 
+    #               Fantasy, Film-Noir, Horror, 
+    #               Musical, Mystery, Romance, 
+    #               Sci-Fi, Thriller, War, Western]
+    ###############################################
+    
+    # genres = ['Comedy','Childrens','Crime','Horror','Thriller']
+    genres = ['Childrens','Horror','Thriller']
+    
     plt.figure()
-    comedy_movies = movies.loc[movies["Comedy"] == 1]
-    comedy_movie_id_list = comedy_movies['Movie Id'].tolist()
-    A1C = []
-    A2C = []
-    namesC = []
-    print(len(comedy_movie_id_list))
-    for i in range(len(comedy_movie_id_list)):
-        namesC.append(id_title_dict[comedy_movie_id_list[i]])
-        proj = Vproj[:,(int(comedy_movie_id_list[i]))]
-        A1C.append(proj[0])
-        A2C.append(proj[1])  
-    plt.scatter(A1C, A2C, c='b')
-    #for i, n in enumerate(namesC):
-        #plt.annotate(n, (A1C[i], A2C[i]))    
-    horror_movies = movies.loc[movies["Horror"] == 1]
-    horror_movie_id_list = horror_movies['Movie Id'].tolist()
-    A1H = []
-    A2H = []
-    namesH = []
-    for i in range(len(horror_movie_id_list)):
-        namesH.append(id_title_dict[horror_movie_id_list[i]])
-        proj = Vproj[:,(int(horror_movie_id_list[i]))]
-        A1H.append(proj[0])
-        A2H.append(proj[1])
-    plt.scatter(A1H, A2H, c='r')
-    #for i, n in enumerate(namesH):
-        #plt.annotate(n, (A1H[i], A2H[i]))    
-    musical_movies = movies.loc[movies["Musical"] == 1]
-    musical_movie_id_list = musical_movies['Movie Id'].tolist()
-    A1M = []
-    A2M = []
-    namesM = []
-    for i in range(len(musical_movie_id_list)):
-        namesM.append(id_title_dict[musical_movie_id_list[i]])
-        proj = Vproj[:,(int(musical_movie_id_list[i]))]
-        A1M.append(proj[0])
-        A2M.append(proj[1]) 
-    plt.scatter(A1M, A2M, c='g')
-    #for i, n in enumerate(namesM):
-        #plt.annotate(n, (A1M[i], A2M[i]))
+    
+    for genre in genres:
+        genre_movies = movies.loc[movies[genre] == 1]
+        genre_movie_id_list = genre_movies['Movie Id'].tolist()
+        A1C = []
+        A2C = []
+        namesC = []
+        for i in range(len(genre_movie_id_list)):
+            namesC.append(id_title_dict[genre_movie_id_list[i]])
+            proj = Vproj[:,(int(genre_movie_id_list[i]))]
+            A1C.append(proj[0])
+            A2C.append(proj[1])  
+        plt.scatter(A1C, A2C, label=genre, alpha=0.5)  
+    
     plt.xlabel('Axis 1')
     plt.ylabel('Axis 2')
-    plt.title("Comedy, Horror, and Musical Movies")
-    # plt.savefig("out/GenreVis")
+    plt.title("Movies by Genres")
+    plt.legend(loc='best')
+    plt.savefig("../plots/GenreVis")
     plt.show()
     
     
