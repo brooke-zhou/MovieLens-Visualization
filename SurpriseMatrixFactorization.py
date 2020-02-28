@@ -6,6 +6,7 @@ from surprise import Reader
 from surprise import accuracy
 
 import pandas as pd
+import numpy as np
 
 #############################
 # SVD with bias in Surprise #
@@ -75,8 +76,19 @@ def surpriseSVD(mode,
         predictions = algo.test(test)
         train_err = accuracy.rmse(predictions, verbose=False)
         
-        # Return V (qi),  U (pu), train_err (RMSE)
-        return algo.qi, algo.pu, train_err
+        U = algo.pu
+        V = algo.qi
+        
+        A, _, B = np.linalg.svd(V.T)
+        A = A.T
+        # Use the first 2 cols for work
+        Asub = A[:, :2]
+        
+        Uproj = np.dot(Asub.T, U.T)
+        Vproj = np.dot(Asub.T, V.T)
+        
+        # Return Vproj,  Uproj, train_err (RMSE of Y = U^T V)
+        return Vproj, Uproj, train_err
         
 
 ################################################################
@@ -147,8 +159,19 @@ def surprisePMF(mode,
         predictions = algo.test(test)
         train_err = accuracy.rmse(predictions, verbose=False)
         
-        # Return V (qi),  U (pu), train_err (RMSE)
-        return algo.qi, algo.pu, train_err
+        U = algo.pu
+        V = algo.qi
+        
+        A, _, B = np.linalg.svd(V.T)
+        A = A.T
+        # Use the first 2 cols for work
+        Asub = A[:, :2]
+        
+        Uproj = np.dot(Asub.T, U.T)
+        Vproj = np.dot(Asub.T, V.T)
+        
+        # Return Vproj,  Uproj, train_err (RMSE of Y = U^T V)
+        return Vproj, Uproj, train_err
         
     
 #####################################################################
@@ -219,8 +242,19 @@ def surpriseSVDpp(mode,
         predictions = algo.test(test)
         train_err = accuracy.rmse(predictions, verbose=False)
         
-        # Return V (qi),  U (pu), train_err (RMSE)
-        return algo.qi, algo.pu, train_err
+        U = algo.pu
+        V = algo.qi
+        
+        A, _, B = np.linalg.svd(V.T)
+        A = A.T
+        # Use the first 2 cols for work
+        Asub = A[:, :2]
+        
+        Uproj = np.dot(Asub.T, U.T)
+        Vproj = np.dot(Asub.T, V.T)
+        
+        # Return Vproj,  Uproj, train_err (RMSE of Y = U^T V)
+        return Vproj, Uproj, train_err
     
 
 ####################################
@@ -316,7 +350,18 @@ def surpriseNMF(mode,
         predictions = algo.test(test)
         train_err = accuracy.rmse(predictions, verbose=False)
         
-        # Return V (qi),  U (pu), train_err (RMSE)
-        return algo.qi, algo.pu, train_err
+        U = algo.pu
+        V = algo.qi
+        
+        A, _, B = np.linalg.svd(V.T)
+        A = A.T
+        # Use the first 2 cols for work
+        Asub = A[:, :2]
+        
+        Uproj = np.dot(Asub.T, U.T)
+        Vproj = np.dot(Asub.T, V.T)
+        
+        # Return Vproj,  Uproj, train_err (RMSE of Y = U^T V)
+        return Vproj, Uproj, train_err
     
     

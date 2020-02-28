@@ -18,18 +18,18 @@ import basic_stats as stat
 #   Read and clean data   #
 ###########################
 
-# # import original data and clean
-# path_to_original_movies_file = '../data/movies.txt'
-# path_to_original_data='../data/data.txt'
-# movies, duplicate_count, replace_table = \
-#     cleaner.clean_movies(path_to_original_movies_file, save=True)
-# data = cleaner.clean_data(replace_table, path_to_original_data, save_new_data='npy')
+# import original data and clean
+path_to_original_movies_file = '../data/movies.txt'
+path_to_original_data='../data/data.txt'
+movies, duplicate_count, replace_table = \
+    cleaner.clean_movies(path_to_original_movies_file, save=True)
+data = cleaner.clean_data(replace_table, path_to_original_data, save_new_data='npy')
 
-# or import cleaned data
-path_to_clean_movies_file = '../data/movies_nodup.txt'
-path_to_clean_data_file = '../data/data_clean.npy'
-movies = cleaner.read_movie_as_dataframe(path_to_clean_movies_file)
-data = np.load(path_to_clean_data_file)
+# # or import cleaned data
+# path_to_clean_movies_file = '../data/movies_nodup.txt'
+# path_to_clean_data_file = '../data/data_clean.npy'
+# movies = cleaner.read_movie_as_dataframe(path_to_clean_movies_file)
+# data = np.load(path_to_clean_data_file)
 
 # create movie title-ID lookup dictionary
 id_title_dict = {}
