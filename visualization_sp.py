@@ -55,8 +55,7 @@ def make_plot(A1, A2, names, fname, title):
 import SurpriseMatrixFactorization as sp
 
 n_factors=100
-# n_epochs=400
-n_epochs=2
+n_epochs=400
 reg_pu=0.06
 reg_qi=0.06
 reg_bu=0.02
