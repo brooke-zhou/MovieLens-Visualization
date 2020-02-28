@@ -3,9 +3,13 @@ import pandas as pd
 from scipy.sparse import csr_matrix
 import numpy as np
 from statistics import mean
+from matrixFactorMethods import get_err, centerUV, calculateProjection
 
 
-def implicitModel(movieLensDataTrainPath='../data/train_clean.txt', movieLensDataTestPath='../data/test_clean.txt'):
+def implicitModel(movieLensDataTrainPath='train_clean.txt', movieLensDataTestPath='test_clean.txt'):
+    ''' Implementation of the implicit model. Takes in train and testing data. '''
+
+    # Load in training and testing data
     dfTrain = pd.read_csv(movieLensDataTrainPath, sep="\t", header=None)
     dfTrain.columns = ["User Id", "Movie Id", "Rating"]
 
@@ -15,39 +19,33 @@ def implicitModel(movieLensDataTrainPath='../data/train_clean.txt', movieLensDat
     test = dfTest.to_numpy()
     train = dfTrain.to_numpy()
 
-    # initialize a model
+    # Initialize a model based on the implicit model
     model = implicit.als.AlternatingLeastSquares(factors=25, iterations=400, regularization=0.01)
-    # print(train)
+    # Declare M and N
     M = max(max(train[:, 0]), max(test[:, 0])).astype(int)
-    N = max(max(train[:, 1]), max(test[:, 1])).astype(int)
+    N = max(max(train[:, 1]), max(test[:, 1])).astype(int) + 1
 
+    # We need a matrix to store all values of Y since it
+    # expects an actual M x N matrix with each i, j
+    # entry containing Y_ij.
     newTrains = np.zeros((M, N))
-    # print(len(newTrains))
-    # print(len(newTrains[0]))
     for y in train:
         i, j, yij = y
         i = i - 1
-        j = j - 1
-        # print(newTrains[i])
+        j = j
         newTrains[i][j] = yij
     newTrains = np.array(newTrains)
+
+    # Convert to a format accepted by
+    # implicit.
     train = csr_matrix(newTrains)
-    # train the model on a sparse matrix of item/user/confidence weights
+    # Train the model on a sparse matrix of movie/user/confidence weights
     model.fit(train)
-
-    # print(model.item_factors)
-    # print(len(model.item_factors))
-    # print(model.user_factors)
-    # print(len(model.user_factors))
+    # These are our corresponding U and V matrices
     return model.item_factors, model.user_factors
-    # recommend items for a user
-    # user_items = item_user_data.T.tocsr()
-    # recommendations = model.recommend(userid, user_items)
 
-    # find related items
-    # related = model.similar_items(itemid)
-
-def get_err2(U, V, Y, reg=0.0):
+# Without this, the error goes up to around 6. Don't know why.
+'''def get_err2(U, V, Y, reg=0.0):
     """
     Takes as input a matrix Y of triples (i, j, Y_ij) where i is the index of a user,
     j is the index of a movie, and Y_ij is user i's rating of movie j and
@@ -59,27 +57,27 @@ def get_err2(U, V, Y, reg=0.0):
     totalLength = len(Y)
 
     sumOfSqs = 0
-    meanYs = mean(Y[:, 2])
+    #meanYs = mean(Y[:, 2])
     for y in Y:
         #print(y)
         i = int(y[0])
         j = int(y[1])
         yij = y[2]
         i = i - 1
-        j = j - 1
-        sumOfSqs = sumOfSqs + ((yij - meanYs - np.dot(U[i], V[j])) ** 2)
+        j = j
+        sumOfSqs = sumOfSqs + ((yij - np.dot(U[i], V[j])) ** 2)
 
     normSum = (np.linalg.norm(U, ord='fro') ** 2 + np.linalg.norm(V, ord='fro') ** 2)
-    return ((reg * normSum) + sumOfSqs) / (2 * totalLength)
+    return ((reg * normSum) + sumOfSqs) / (2 * totalLength)'''
 
 
-def Vtrain(M, N, K, eta, reg, Y, max_epochs=300):
-    model = implicit.als.AlternatingLeastSquares(factors=25, iterations=400, regularization=0.01)
-    # print(train)
-
+def Vtrain(Y, max_epochs=400):
+    ''' This trains the matrix V on implicit to retrieve a matrix factorization. '''
+    model = implicit.als.AlternatingLeastSquares(factors=25, iterations=max_epochs, regularization=0.01)
+    # Train here
     newTrains = np.array(Y)
     train = csr_matrix(newTrains)
-    print(train.shape)
+    #print(train.shape)
     # train the model on a sparse matrix of item/user/confidence weights
     model.fit(train)
 
@@ -90,54 +88,36 @@ def Vtrain(M, N, K, eta, reg, Y, max_epochs=300):
     return model.item_factors, model.user_factors
 
 def SVDofV(oldV):
-    M = len(oldV)  # users
-    N = len(oldV[0])  # movies
-    print("Factorizing with ", M, " users, ", N, " movies.")
-    # Ks = [10, 20, 30, 50, 100]
-    #print("oldV")
-    #print(oldV)
-    K = 20
-    reg = 0.0
-    eta = 0.03  # learning rate
+    ''' SVDofV() finds the SVD of V, using same method as before: through implicit. '''
     # Use to compute Ein and Eout
-    A, B = Vtrain(M, N, K, eta, reg, oldV, max_epochs=300)
-    #print(err)
+    A, B = Vtrain(oldV, max_epochs=300)
     return A, B
 
 
 def tryThis():
+    ''' Main engine, basically we didn't know how promising this was, so
+        we just wanted to try it. The U, V is obtained, and then transposed
+        to then collect the SVD of V. Then, the A is used for calculating
+        projection. Then it is tested. '''
     U, V = implicitModel()
     U = np.float64(U)
     V = np.float64(V)
     U = U.T
     V = V.T
-    # U = np.array(U)
-    # V = np.array(V)
-    for i in range(len(V)):
-        V[i] = V[i] - mean(V[i])
-    for i in range(len(U)):
-        U[i] = U[i] - mean(U[i])
-    # SVD of V!
+    # Center U and V.
+    U, V = centerUV(U, V)
 
+    # SVD of V!
     A, B = SVDofV(V)
     A = A.T
-    # Use the first 2 cols for work
-    Asub = A[:, :2]
-
-    projU = np.dot(Asub.T, U)
-    projV = np.dot(Asub.T, V)
-
-    # Rescale dimensions to compress the image
-    for i in range(len(projV)):
-        projV[i] = projV[i] / max(projV[i])
-    for i in range(len(projU)):
-        projU[i] = projU[i] / max(projU[i])
+    # Use the first 2 cols for 2 dimensional projection.
+    projU, projV = calculateProjection(A, U, V)
     dfTest = pd.read_csv('../data/test_clean.txt', sep="\t", header=None)
     dfTest.columns = ["User Id", "Movie Id", "Rating"]
-
+    # Calculate error.
     Y_test = dfTest.to_numpy()
-    print(get_err2(U.T, V.T, Y_test))
-    print(get_err2(projU.T, projV.T, Y_test))
+    print(get_err(U.T, V.T, Y_test))
+    print(get_err(projU.T, projV.T, Y_test))
     return projU, projV
 
 tryThis()
