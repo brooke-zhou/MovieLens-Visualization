@@ -115,7 +115,7 @@ def visualizeBellsWhistles():
     names = []
     for i in range(10):
         names.append(id_title_dict[int(best_movies[i,0])])
-        proj = Vproj[:,(int(best_movies[i,0]) - 1)]
+        proj = Vproj[:,(int(best_movies[i,0]))]
         A1.append(proj[0])
         A2.append(proj[1])
     make_plot(A1, A2, names, 'out/10BestVisualization', 'Visualization of Top 10 Best Movies') 
