@@ -15,30 +15,26 @@ from sklearn.decomposition import PCA, TruncatedSVD
 #import implicit
 
 
-def tryThis(U, V):
-    #U, V = implicitModel()
-    #U = np.float64(U)
-    #V = np.float64(V)
-    U = U.T
-    V = V.T
-    print(V)
-    # U = np.array(U)
-    # V = np.array(V)
+def centerUV(U, V):
+    '''
+    Center V, U as each row should have 0 mean.
+    '''
+    # A TA said this was a good idea.
     for i in range(len(V)):
         V[i] = V[i] - mean(V[i])
     for i in range(len(U)):
         U[i] = U[i] - mean(U[i])
-    # SVD of V!
-    dfTest = pd.read_csv('../data/test_clean.txt', sep="\t", header=None)
-    dfTest.columns = ["User Id", "Movie Id", "Rating"]
+    return U, V
 
-    Y_test = dfTest.to_numpy()
-    print(get_err2(U.T, V.T, Y_test))
-    A, S, B = np.linalg.svd(V)
-    A = A.T
+def calculateProjection(A, U, V):
+    '''
+    Calculate the two dimensional projections of
+    U and V using A!
+    '''
     # Use the first 2 cols for work
     Asub = A[:, :2]
 
+    # Calculate the two dimensional projection!
     projU = np.dot(Asub.T, U)
     projV = np.dot(Asub.T, V)
 
@@ -47,120 +43,204 @@ def tryThis(U, V):
         projV[i] = projV[i] / max(projV[i])
     for i in range(len(projU)):
         projU[i] = projU[i] / max(projU[i])
-
-
-    print(get_err2(projU.T, projV.T, Y_test))
     return projU, projV
 
-
-# Method 1: Off the shelf and recommended method for the class.
-# , movieLensTestPath = '../data/test.txt'
-def surpriseSVD(movieLensDataPath = '../data/data_clean.txt'):
-    ''' Basic use of the surprise SVD algorithm. '''
-    ''' Params: movieLensDataPath is the path to the movielens data we're looking at. '''
-    ''' Note: replace with cleaned data. '''
-    ''' We want to return U and V where for a Y of a matrix of movie ratings, Y ~/= U^TV.'''
-
-    # Load the data as a pandas data frame, as reading from text didn't quite work at first.
-    df = pd.read_csv(movieLensDataPath, sep="\t", header=None)
-    df.columns = ["User Id", "Movie Id", "Rating"]
-
-    # We need the rating scale.
-    reader = Reader(rating_scale=(1, 5))
-
-    # The columns are User Id, Movie Id, and Rating.
-    data = Dataset.load_from_df(df[["User Id", "Movie Id", "Rating"]], reader)
-    # Use the famous SVD algorithm. To fit, we have to convert it to a trainset.
-    algo = SVD()
-    trainset = data.build_full_trainset()
-    algo.fit(trainset)
-    algop = algo.pu
-    algoq = algo.qi
-
-    kf = KFold(n_splits=3)
-    algo = SVD()
-
-    for trainset, testset in kf.split(data):
-        # train and test algorithm.
-        algo.fit(trainset)
-        predictions = algo.test(testset)
-
-        # Compute and print Root Mean Squared Error
-        accuracy.rmse(predictions, verbose=True)
-    # Return U (pu) and V (qi)
-    return algop, algoq
-
-    '''# Load the data as a pandas data frame, as reading from text didn't quite work at first.
-    df = pd.read_csv(movieLensTrainPath, sep="\t", header=None)
-    df.columns = ["User Id", "Movie Id", "Rating"]
-
-    # We need the rating scale.
-    reader = Reader(rating_scale=(1, 5))
-
-    # The columns are User Id, Movie Id, and Rating.
-    data = Dataset.load_from_df(df[["User Id", "Movie Id", "Rating"]], reader)
-
-    dfTest = pd.read_csv(movieLensTestPath, sep="\t", header=None)
-    dfTest.columns = ["User Id", "Movie Id", "Rating"]
-
-    # The columns are User Id, Movie Id, and Rating.
-    dataTest = Dataset.load_from_df(dfTest[["User Id", "Movie Id", "Rating"]], reader)
-
-    # Use the famous SVD algorithm. To fit, we have to convert it to a trainset.
-    trainset = data.build_full_trainset()
-    algo = SVD()
-    algo.fit(trainset)
-
-    testset = dataTest.build_anti_testset()
-    # Train the algorithm on the trainset, and predict ratings for the testset
-    algo.fit(trainset)
-    predictions = algo.test(testset)
-    # Then compute RMSE
-    accuracy.rmse(predictions)
-    # Return U (pu) and V (qi)
-    return algo.pu, algo.qi'''
-
-#def linalgNorm(movieLensTrainPath = '../data/train_clean.txt', movieLensTestPath = '../data/test_clean.txt'):
-
-
-# Method 2
-def sklearnPCA(movieLensTrainPath = '../data/train_clean.txt', movieLensTestPath = '../data/test_clean.txt'):
-
-    pca = PCA(n_components=2, svd_solver='full')
-    df = pd.read_csv(movieLensTrainPath, sep="\t", header=None)
-    df.columns = ["User Id", "Movie Id", "Rating"]
-    X = df.to_numpy()
-    M = max(X[:, 0]).astype(int)
-    N = max(X[:, 1]).astype(int)
-
-
-    newTrains = np.zeros((M, N))
-    # print(len(newTrains))
-    # print(len(newTrains[0]))
-    for y in X:
-        i, j, yij = y
-        i = i - 1
-        j = j - 1
-        # print(newTrains[i])
-        newTrains[i][j] = yij
-    U, S, Vh = np.linalg.svd(newTrains)
-    newTrains = np.array(newTrains)
-    pca.fit(newTrains)
-    tSVD = TruncatedSVD()
-    tSVD.fit(newTrains)
-    return U, Vh, pca.components_[0], pca.components_[1], tSVD.components_[0], tSVD.components_[1]
-    #print(len(pca.components_[0]))
-
-
-    #print(len(tSVD.components_))
-
-# Method 3 (next functions): Seem familiar?
-
-# The final function is the main one to run!
-def grad_U(Ui, Yij, Vj, meanYs, a_i, b_j, reg, eta):
+# Method 1: Original SVD
+def grad_U1(Ui, Yij, Vj, reg, eta):
     """
     Takes as input Ui (the ith row of U), a training point Yij, the column
     vector Vj (jth column of V^T), reg (the regularization parameter lambda),
+    and eta (the learning rate).
+
+    Returns the gradient of the regularized loss function with
+    respect to Ui multiplied by eta.
+
+    Note: grad_U1 does not include bias terms!
+    """
+    return eta * (reg * Ui - (Vj * (Yij - np.dot(Ui, Vj))))
+
+def grad_V1(Vj, Yij, Ui, reg, eta):
+    """
+    Takes as input the column vector Vj (jth column of V^T), a training point Yij,
+    Ui (the ith row of U), reg (the regularization parameter lambda),
+    and eta (the learning rate).
+
+    Returns the gradient of the regularized loss function with
+    respect to Vj multiplied by eta.
+
+    Note: grad_V1 does not include bias terms!
+    """
+    return eta * (reg * Vj - (Ui * (Yij - np.dot(Ui, Vj))))
+
+# Culprit earlier
+def get_err2(U, V, Y, reg=0.0):
+    """
+    Takes as input a matrix Y of triples (i, j, Y_ij) where i is the index of a user,
+    j is the index of a movie, and Y_ij is user i's rating of movie j and
+    user/movie matrices U and V.
+
+    Returns the mean regularized squared-error of predictions made by
+    estimating Y_{ij} as the dot product of the ith row of U and the jth column of V^T.
+
+    Note: get_err2 does not include bias terms!
+    """
+    totalLength = len(Y)
+    sumOfSqs = 0
+    # Do we need meanYs?
+    #meanYs = mean(Y[:, 2])
+    # Compute squared error
+    for y in Y:
+        i = int(y[0])
+        j = int(y[1])
+        yij = y[2]
+        i = i - 1
+
+        #j = j
+        sumOfSqs = sumOfSqs + ((yij - np.dot(U[i], V[j])) ** 2)
+    # Compute the regularized component.
+    normSum = (np.linalg.norm(U, ord='fro') ** 2 + np.linalg.norm(V, ord='fro') ** 2)
+    # Returns the mean regularized squared-error
+    return ((reg * normSum) + sumOfSqs) / (2 * totalLength)
+
+def SVDofV(oldV, K=20, max_epochs=300):
+    ''' SVDofV() finds the SVD of V through the same method as the SVD '''
+    ''' from homework 5. The main difference is that we already have '''
+    ''' the matrix we want to factorize, while we have to build that '''
+    ''' for Y from the dataset. And we only return A and B. '''
+    # Find our dimensions M and N!
+    M = len(oldV)
+    N = len(oldV[0])
+    reg = 0.0
+    eta = 0.03  # learning rate
+    Y = []
+    for i in range(len(oldV)):
+        for j in range(len(oldV[i])):
+            Y.append([i, j, oldV[i][j]])
+    Y = np.array(Y)
+    # Use to compute Ein and Eout
+    A, B, err = Vtrain_model(M, N, K, eta, reg, Y, max_epochs=max_epochs)
+    return A, B
+
+def Vtrain_model(M, N, K, eta, reg, Y, eps=0.0001, max_epochs=300):
+    """
+    Given a training data matrix Y containing rows (i, j, Y_ij)
+    where Y_ij is user i's rating on movie j, learns an
+    M x K matrix U and N x K matrix V such that rating Y_ij is approximated
+    by (UV^T)_ij.
+
+    Uses a learning rate of <eta> and regularization of <reg>. Stops after
+    <max_epochs> epochs, or once the magnitude of the decrease in regularized
+    MSE between epochs is smaller than a fraction <eps> of the decrease in
+    MSE after the first epoch.
+
+    Returns a tuple (U, V, err) consisting of U, V, and the unregularized MSE
+    of the model.
+
+    Note: this version has no biases terms and was originally used
+    to get an approximate decomposition of V.
+    """
+    np.seterr(all='raise')
+    # Initialize U and V to be matrices with random uniform
+    # numbers of small magnitude.
+    U = np.random.uniform(low=-0.5, high=0.5, size=(M, K))
+    V = np.random.uniform(low=-0.5, high=0.5, size=(N, K))
+
+    step = get_err2(U, V, Y, reg=reg)
+    err = step
+
+    for epoch in range(max_epochs):
+        # Random permutation of the array
+        yinds = np.random.permutation(len(Y))
+        #meanYs = mean(Y[:, 2])
+        # For each point, perform gradient weight update.
+        for ind in yinds:
+            # Unpack Y_ij, i, and j.
+            y = Y[ind]
+            i = int(y[0])
+            j = int(y[1])
+            yij = y[2]
+            i = i - 1
+            #j = j
+
+            # Compute the gradients
+            newU = grad_U1(U[i, :], yij, V[j, :], reg, eta)
+            newV = grad_V1(V[j, :], yij, U[i, :], reg, eta)
+
+            # Update U and V simultaneously
+            U[i, :] = U[i, :] - newU
+            V[j, :] = V[j, :] - newV
+
+        # Compute the train error.
+        newErr = get_err2(U, V, Y, reg=reg)
+
+        # Stop if the decrease of error is too
+        # low or is at most 0.
+        if epoch >= 1:
+            fract = abs(err - newErr) / step
+            err = newErr
+            if fract < eps:
+                print("Stopping at epoch: " + str(epoch))
+                print("Error is: " + str(err))
+                break
+        else:
+            err = newErr
+            if epoch == 0:
+                step = abs(err - step)
+
+    # The definition changed from Problem Set 5, so we're pushing
+    # the miniproject definition of U and V.
+    return U.T, V.T, err
+
+
+def originalSVD(movieLensDataTrainPath='../data/train_clean.txt', movieLensDataTestPath='../data/test_clean.txt'):
+    ''' originalSVD() is the main engine of original SVD! It grabs the data, '''
+    ''' calculates U and V from Y ~= U^TV, and then calculates SVD of V. '''
+    ''' This is used to calculate the 2 dimension projection of U and V, which '''
+    ''' are returned. '''
+
+    # Read in train and test data!
+    dfTrain = pd.read_csv(movieLensDataTrainPath, sep="\t", header=None)
+    dfTrain.columns = ["User Id", "Movie Id", "Rating"]
+
+    dfTest = pd.read_csv(movieLensDataTestPath, sep="\t", header=None)
+    dfTest.columns = ["User Id", "Movie Id", "Rating"]
+
+    Y_test = dfTest.to_numpy()
+    Y_train = dfTrain.to_numpy()
+
+    M = max(max(Y_train[:, 0]), max(Y_test[:, 0])).astype(int)  # users
+    N = max(max(Y_train[:, 1]), max(Y_test[:, 1])).astype(int) + 1  # movies
+
+    K = 10
+    print("K: " + str(K))
+    reg = 0.0
+    eta = 0.03  # learning rate
+
+    # Use to compute Ein and Eout
+    U, V, err = Vtrain_model(M, N, K, eta, reg, Y_train, max_epochs=0)
+    print("In sample")
+    print(err)
+
+    U, V = centerUV(U, V)
+
+    # SVD of V!
+    A, B = SVDofV(V, K=K, max_epochs=0)
+
+    projU, projV = calculateProjection(A, U, V)
+    print("Out of sample")
+    print(get_err2(U.T, V.T, Y_test))
+    print(get_err2(projU.T, projV.T, Y_test))
+    return projU, projV
+
+# Method 3 (next functions): Seem familiar?
+# This is specifically the method that accounts for
+# biases.
+# originalSVDWithBellsWhistles() is the main one to run!
+def grad_U(Ui, Yij, Vj, meanYs, a_i, b_j, reg, eta):
+    """
+    Takes as input Ui (the ith row of U), a training point Yij, the column
+    vector Vj (jth column of V^T), mean of all the Ys, bias value a_i, bias value
+    b_j, reg (the regularization parameter lambda),
     and eta (the learning rate).
 
     Returns the gradient of the regularized loss function with
@@ -172,108 +252,65 @@ def grad_U(Ui, Yij, Vj, meanYs, a_i, b_j, reg, eta):
 def grad_V(Vj, Yij, Ui, meanYs, a_i, b_j, reg, eta):
     """
     Takes as input the column vector Vj (jth column of V^T), a training point Yij,
-    Ui (the ith row of U), reg (the regularization parameter lambda),
+    Ui (the ith row of U), mean of all the Ys, bias value a_i, bias value
+    b_j, reg (the regularization parameter lambda),
     and eta (the learning rate).
 
     Returns the gradient of the regularized loss function with
     respect to Vj multiplied by eta.
     """
-    return eta * (reg * Vj - (Ui * (Yij- meanYs - np.dot(Ui, Vj) - a_i - b_j)))
+    return eta * (reg * Vj - (Ui * (Yij - meanYs - np.dot(Ui, Vj) - a_i - b_j)))
 
 def grad_a(Ui, Yij, Vj, meanYs, a_i, b_j, reg, eta):
     """
     Takes as input Ui (the ith row of U), a training point Yij, the column
-    vector Vj (jth column of V^T), reg (the regularization parameter lambda),
+    vector Vj (jth column of V^T), mean of all the Ys, bias value a_i, bias value
+    b_j, reg (the regularization parameter lambda),
     and eta (the learning rate).
 
     Returns the gradient of the regularized loss function with
-    respect to Ui multiplied by eta.
+    respect to a_i multiplied by eta.
     """
     return eta * (reg * a_i - (Yij - meanYs - np.dot(Ui, Vj) - a_i - b_j))
-
 
 def grad_b(Vj, Yij, Ui, meanYs, a_i, b_j, reg, eta):
     """
     Takes as input the column vector Vj (jth column of V^T), a training point Yij,
-    Ui (the ith row of U), reg (the regularization parameter lambda),
+    Ui (the ith row of U), mean of all the Ys, bias value a_i, bias value
+    b_j, reg (the regularization parameter lambda),
     and eta (the learning rate).
 
     Returns the gradient of the regularized loss function with
-    respect to Vj multiplied by eta.
+    respect to b_j multiplied by eta.
     """
     return eta * (reg * b_j - (Yij - meanYs - np.dot(Ui, Vj) - a_i - b_j))
-
-def grad_U1(Ui, Yij, Vj, meanYs, reg, eta):
-    """
-    Takes as input Ui (the ith row of U), a training point Yij, the column
-    vector Vj (jth column of V^T), reg (the regularization parameter lambda),
-    and eta (the learning rate).
-
-    Returns the gradient of the regularized loss function with
-    respect to Ui multiplied by eta.
-    """
-    return eta * (reg * Ui - (Vj * (Yij - meanYs - np.dot(Ui, Vj))))
-
-
-def grad_V1(Vj, Yij, Ui, meanYs, reg, eta):
-    """
-    Takes as input the column vector Vj (jth column of V^T), a training point Yij,
-    Ui (the ith row of U), reg (the regularization parameter lambda),
-    and eta (the learning rate).
-
-    Returns the gradient of the regularized loss function with
-    respect to Vj multiplied by eta.
-    """
-    return eta * (reg * Vj - (Ui * (Yij- meanYs - np.dot(Ui, Vj))))
-
 
 def get_err(U, V, Y, a, b, reg=0.0):
     """
     Takes as input a matrix Y of triples (i, j, Y_ij) where i is the index of a user,
     j is the index of a movie, and Y_ij is user i's rating of movie j and
-    user/movie matrices U and V.
+    user/movie matrices U and V, and bias vectors a and b.
 
     Returns the mean regularized squared-error of predictions made by
     estimating Y_{ij} as the dot product of the ith row of U and the jth column of V^T.
     """
     totalLength = len(Y)
-
     sumOfSqs = 0
+    # Take the mean of Ys
     meanYs = mean(Y[:, 2])
+    # Compute squared error
     for y in Y:
         i = int(y[0])
         j = int(y[1])
         yij = y[2]
         i = i - 1
-        j = j - 1
+        # Remove - 1
+        #j = j - 1
         sumOfSqs = sumOfSqs + ((yij - meanYs - np.dot(U[i], V[j]) - a[i] - b[j]) ** 2)
-
-    normSum = (np.linalg.norm(U, ord='fro') ** 2 + np.linalg.norm(V, ord='fro') ** 2 +\
+    # Compute the regularized component.
+    normSum = (np.linalg.norm(U, ord='fro') ** 2 + np.linalg.norm(V, ord='fro') ** 2 + \
                np.linalg.norm(a, ord='fro') ** 2 + np.linalg.norm(b, ord='fro') ** 2)
-    return ((reg * normSum) + sumOfSqs) / (2 * totalLength)
-
-def get_err2(U, V, Y, reg=0.0):
-    """
-    Takes as input a matrix Y of triples (i, j, Y_ij) where i is the index of a user,
-    j is the index of a movie, and Y_ij is user i's rating of movie j and
-    user/movie matrices U and V.
-
-    Returns the mean regularized squared-error of predictions made by
-    estimating Y_{ij} as the dot product of the ith row of U and the jth column of V^T.
-    """
-    totalLength = len(Y)
-
-    sumOfSqs = 0
-    meanYs = mean(Y[:, 2])
-    for y in Y:
-        i = int(y[0])
-        j = int(y[1])
-        yij = y[2]
-        i = i - 1
-        j = j - 1
-        sumOfSqs = sumOfSqs + ((yij - meanYs - np.dot(U[i], V[j])) ** 2)
-
-    normSum = (np.linalg.norm(U, ord='fro') ** 2 + np.linalg.norm(V, ord='fro') ** 2)
+    # Returns the mean regularized squared-error
     return ((reg * normSum) + sumOfSqs) / (2 * totalLength)
 
 
@@ -293,45 +330,46 @@ def train_model(M, N, K, eta, reg, Y, eps=0.0001, max_epochs=300):
     of the model.
     """
     np.seterr(all='raise')
-    #print(M)
-    #print(K)
-    #print(N)
+    # Initialize U, V, a, and b to be matrices with random uniform
+    # numbers of small magnitude.
     U = np.random.uniform(low=-0.5, high=0.5, size=(M, K))
     V = np.random.uniform(low=-0.5, high=0.5, size=(N, K))
     a = np.random.uniform(low=-0.2, high=0.2, size=(M, 1))
     b = np.random.uniform(low=-0.2, high=0.2, size=(N, 1))
     step = get_err(U, V, Y, a, b, reg=reg)
     err = step
-    print("K: " + str(K))
+    # We perform at most max_epochs updates.
     for epoch in range(max_epochs):
         # Random permutation of the array
-        # epoch_U = np.random.permutation(Y)
         yinds = np.random.permutation(len(Y))
         meanYs = mean(Y[:, 2])
-        # For each point, perform gradient weight update.
+        # For each point in Y, perform gradient weight update.
         for ind in yinds:
             y = Y[ind]
             i = int(y[0])
             j = int(y[1])
             yij = y[2]
             i = i - 1
-            j = j - 1
+            # Remove - 1
+            #j = j - 1
 
+            # Calculate all the gradients.
             newU = grad_U(U[i, :], yij, V[j, :], meanYs, a[i], b[j], reg, eta)
             newV = grad_V(V[j, :], yij, U[i, :], meanYs, a[i], b[j], reg, eta)
             newa = grad_a(U[i, :], yij, V[j, :], meanYs, a[i], b[j], reg, eta)
             newb = grad_b(V[j, :], yij, U[i, :], meanYs, a[i], b[j], reg, eta)
 
-            # Sanity checks
-            # eta (step size) * gradient result
-            # Another sanity check where we
-            # break if the results were wrong.
+            # Update U, V, a, and b independently as gradients
+            # were calculated in the previous step.
             U[i, :] = U[i, :] - newU
             V[j, :] = V[j, :] - newV
             a[i] = a[i] - newa
             b[j] = b[j] - newb
+
+        # Calculate training error.
         newErr = get_err(U, V, Y, a, b, reg=reg)
 
+        # Check for the stopping condition.
         if epoch >= 1:
             fract = abs(err - newErr) / step
             err = newErr
@@ -346,257 +384,57 @@ def train_model(M, N, K, eta, reg, Y, eps=0.0001, max_epochs=300):
 
     return U, V, err, a, b
 
-def Vtrain_model(M, N, K, eta, reg, Y, eps=0.0001, max_epochs=300):
-    """
-    Given a training data matrix Y containing rows (i, j, Y_ij)
-    where Y_ij is user i's rating on movie j, learns an
-    M x K matrix U and N x K matrix V such that rating Y_ij is approximated
-    by (UV^T)_ij.
 
-    Uses a learning rate of <eta> and regularization of <reg>. Stops after
-    <max_epochs> epochs, or once the magnitude of the decrease in regularized
-    MSE between epochs is smaller than a fraction <eps> of the decrease in
-    MSE after the first epoch.
+def naiveMinimization(movieLensDataTrainPath='train_clean.txt', movieLensDataTestPath='test_clean.txt',K=10):
+    ''' Calculate SVD using biases. The logic should be same as originalSVD(). '''
 
-    Returns a tuple (U, V, err) consisting of U, V, and the unregularized MSE
-    of the model.
-    """
-    np.seterr(all='raise')
-    #print(M)
-    #print(K)
-    #print(N)
-    U = np.random.uniform(low=-0.5, high=0.5, size=(M, K))
-    V = np.random.uniform(low=-0.5, high=0.5, size=(N, K))
-    #a = np.random.uniform(low=-0.2, high=0.2, size=(M, 1))
-    #b = np.random.uniform(low=-0.2, high=0.2, size=(N, 1))
-    step = get_err2(U, V, Y, reg=reg)
-    err = step
-    print("K: " + str(K))
-    for epoch in range(max_epochs):
-        # Random permutation of the array
-        # epoch_U = np.random.permutation(Y)
-        yinds = np.random.permutation(len(Y))
-        meanYs = mean(Y[:, 2])
-        # For each point, perform gradient weight update.
-        for ind in yinds:
-            y = Y[ind]
-            i = int(y[0])
-            j = int(y[1])
-            yij = y[2]
-            i = i - 1
-            j = j - 1
-
-            newU = grad_U1(U[i, :], yij, V[j, :], meanYs, reg, eta)
-            newV = grad_V1(V[j, :], yij, U[i, :], meanYs, reg, eta)
-            #newa = grad_a(U[i, :], yij, V[j, :], meanYs, a[i], b[j], reg, eta)
-            #newb = grad_b(V[j, :], yij, U[i, :], meanYs, a[i], b[j], reg, eta)
-
-            # Sanity checks
-            # eta (step size) * gradient result
-            # Another sanity check where we
-            # break if the results were wrong.
-            U[i, :] = U[i, :] - newU
-            V[j, :] = V[j, :] - newV
-
-        newErr = get_err2(U, V, Y, reg=reg)
-
-        if epoch >= 1:
-            fract = abs(err - newErr) / step
-            err = newErr
-            if fract < eps:
-                print("Stopping at epoch: " + str(epoch))
-                print("Error is: " + str(err))
-                break
-        else:
-            err = newErr
-            if epoch == 0:
-                step = abs(err - step)
-
-    return U.T, V.T, err
-
-
-def naiveMinimization(movieLensDataTrainPath='../data/train_clean.txt', movieLensDataTestPath='../data/test_clean.txt'):
+    # Load the train and test data sets.
     dfTrain = pd.read_csv(movieLensDataTrainPath, sep="\t", header=None)
     dfTrain.columns = ["User Id", "Movie Id", "Rating"]
-
     dfTest = pd.read_csv(movieLensDataTestPath, sep="\t", header=None)
     dfTest.columns = ["User Id", "Movie Id", "Rating"]
-
     Y_test = dfTest.to_numpy()
     Y_train = dfTrain.to_numpy()
 
+    # Find M and N, and define other parameters.
     M = max(max(Y_train[:, 0]), max(Y_test[:, 0])).astype(int)  # users
-    N = max(max(Y_train[:, 1]), max(Y_test[:, 1])).astype(int)  # movies
-    print("Factorizing with ", M, " users, ", N, " movies.")
-    #Ks = [10, 20, 30, 50, 100]
-    K = 20
+    # add 1
+    N = max(max(Y_train[:, 1]), max(Y_test[:, 1])).astype(int) + 1 # movies
+    # Ks = [10, 20, 30, 50, 100]
+    #K = 10
     reg = 0.0
     eta = 0.03  # learning rate
 
-    # Use to compute Ein and Eout
+    # Train the model and return U and V.
     U, V, err, a, b = train_model(M, N, K, eta, reg, Y_train, max_epochs=300)
+    # Calculate errors, training and testing.
     print(err)
     print(get_err(U, V, Y_test, a, b))
-    return U, V, err, a, b
+    return U.T, V.T, err, a, b, Y_test
 
-def SVDofV(oldV):
-    M = len(oldV)  # users
-    N = len(oldV[0])  # movies
-    print("Factorizing with ", M, " users, ", N, " movies.")
-    # Ks = [10, 20, 30, 50, 100]
-    #print("oldV")
-    #print(oldV)
-    K = 20
-    reg = 0.0
-    eta = 0.03  # learning rate
-    Y = []
-    for i in range(len(oldV)):
-        for j in range(len(oldV[i])):
-            Y.append([i, j, oldV[i][j]])
-    Y = np.array(Y)
-    #print("Y")
-    #print(Y[0][0])
-    # Use to compute Ein and Eout
-    A, B, err = Vtrain_model(M, N, K, eta, reg, Y, max_epochs=0)
-    print(err)
-    return A, B
-
-def originalSVD(movieLensDataTrainPath='../data/train_clean.txt', movieLensDataTestPath='../data/test_clean.txt'):
-    dfTrain = pd.read_csv(movieLensDataTrainPath, sep="\t", header=None)
-    dfTrain.columns = ["User Id", "Movie Id", "Rating"]
-
-    dfTest = pd.read_csv(movieLensDataTestPath, sep="\t", header=None)
-    dfTest.columns = ["User Id", "Movie Id", "Rating"]
-
-    Y_test = dfTest.to_numpy()
-    Y_train = dfTrain.to_numpy()
-
-    M = max(max(Y_train[:, 0]), max(Y_test[:, 0])).astype(int)  # users
-    N = max(max(Y_train[:, 1]), max(Y_test[:, 1])).astype(int)  # movies
-    print("Factorizing with ", M, " users, ", N, " movies.")
-    # Ks = [10, 20, 30, 50, 100]
-    K = 20
-    reg = 0.0
-    eta = 0.03  # learning rate
-
-    # Use to compute Ein and Eout
-    U, V, err = Vtrain_model(M, N, K, eta, reg, Y_train, max_epochs=0)
-    print(err)
-    #print(get_err2(U, V, Y_test))
-    # Center V as each row should have 0 mean.
-    # A TA said this was a good idea.
-    for i in range(len(V)):
-        V[i] = V[i] - mean(V[i])
-    for i in range(len(U)):
-        U[i] = U[i] - mean(U[i])
-    # SVD of V!
-    # They're already transposed!
-    # print("Transpose")
-    #V = V.T
-    #U = U.T
-    print("V shape")
-    print(V.shape)
-    A, B = SVDofV(V)
-    print("A shape")
-    print(A.shape)
-    print(B.shape)
-    # Use the first 2 cols for work
-    # print(U.shape)
-    # print(V.shape)
-    '''print("A shape, B shape")
-    print(A.shape)
-    print(B.shape)
-    print("Shapes")
-    print(U.shape)
-    print(V.shape)
-    print(A[:, :2].shape)'''
-    Asub = A[:, :2]
-    print("A sub shape")
-    print(Asub.shape)
-    print(U.shape)
-    print(V.shape)
-    projU = np.dot(Asub.T, U)
-    projV = np.dot(Asub.T, V)
-    '''print("Proj Shapes")
-    print(projU.shape)
-    print(projV.shape)'''''
-    # Rescale dimensions to compress the image
-    for i in range(len(projV)):
-        projV[i] = projV[i] / max(projV[i])
-    for i in range(len(projU)):
-        projU[i] = projU[i] / max(projU[i])
-    print(get_err2(U.T, V.T, Y_test))
-    print(get_err2(projU.T, projV.T, Y_test))
-    return projU, projV
-    #return U, V, err
-
-# Method
-def originalSVDwithBellsWhistles():
+# Method 2: Original SVD with accounting for
+# biases!
+def originalSVDwithBellsWhistles(K=10):
+    ''' This is the main engine for SVD with accounting
+        for biases for each movie and user! '''
     # Make modifications to V from original minimization
     # with changes to V!
-    U, V, err, a, b = naiveMinimization()
-    # Center V as each row should have 0 mean.
-    # A TA said this was a good idea.
-    for i in range(len(V)):
-        V[i] = V[i] - mean(V[i])
-    for i in range(len(U)):
-        U[i] = U[i] - mean(U[i])
-    # SVD of V!
-    # transpose U and V
-    #print("Transpose")
-    V = V.T
-    U = U.T
-    #print(X.shape)
-    A, B = SVDofV(V)
-    # Use the first 2 cols for work
-    #print(U.shape)
-    #print(V.shape)
-    #A = A.T
-    #B = B.T
-    '''print("A shape, B shape")
-    print(A.shape)
-    print(B.shape)
-    print("Shapes")
-    print(U.shape)
-    print(V.shape)
-    print(A[:, :2].shape)'''
-    Asub = A[:, :2]
-    '''print("A sub shape")
-    print(Asub.shape)'''
-    #print(U.shape)
-    #print(V.shape)
-    projU = np.dot(Asub.T, U)
-    projV = np.dot(Asub.T, V)
-    '''print("Proj Shapes")
-    print(projU.shape)
-    print(projV.shape)'''''
-    # Rescale dimensions to compress the image
-    for i in range(len(projV)):
-        projV[i] = projV[i] / max(projV[i])
-    for i in range(len(projU)):
-        projU[i] = projU[i] / max(projU[i])
-    dfTest = pd.read_csv('../data/test_clean.txt', sep="\t", header=None)
-    dfTest.columns = ["User Id", "Movie Id", "Rating"]
+    # Calculate original SVD with biases this time.
+    U, V, err, a, b, Y_test = naiveMinimization(K=K)
+    U, V = centerUV(U, V)
 
-    Y_test = dfTest.to_numpy()
+    # SVD of V!
+    A, B = SVDofV(V, K=K, max_epochs=300)
+
+    projU, projV = calculateProjection(A, U, V)
+
+    # Look at and compare out of sample errors.
     print(get_err(U.T, V.T, Y_test, a, b))
     print(get_err(projU.T, projV.T, Y_test, a, b))
     return projU, projV
 
+
 # Original SVD
 originalSVD()
-# Surprise SVD
-'''algop, algoq = surpriseSVD()
-dfTest = pd.read_csv('../data/test_clean.txt', sep="\t", header=None)
-dfTest.columns = ["User Id", "Movie Id", "Rating"]
-
-Y_test = dfTest.to_numpy()
-print(get_err2(algop, algoq, Y_test))'''
-
-#Ui, Vi, V, U, V1, U1 = sklearnPCA()
-#print(len(Ui[0]))
-#print(len(Vi[0]))
-#tryThis(Ui, Vi)
-#print(V[0])
-#tryThis(U, V)
-#tryThis(U1, V1)
+print("Finished next")
+originalSVDwithBellsWhistles()
