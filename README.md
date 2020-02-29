@@ -26,16 +26,6 @@ Caltech CS155 (2020WI) miniproject 2. Team 0-Loss-or-Bust. This project is to ma
 - Modified code from Homework 5
 - Manually implemented biased SVD
 - Off-the-shelf implementation: Implicit
-- Off-the-shelf implementation: Surprise
-  - SurpriseMatrixFactorization.py
-    - Functions of four matrix factorization methods (SVD, PMF, SVD++ and NMF) from Surprise to 
-      - train on training data, then evaluate out-of-sample error on test data
-      - train on all data and output projected U and V in 2 dimensions
-  - matrix_factorization.py
-    - First, read in clean movie and data files
-    - Then, run each part corresponding to each matrix factorization methods to
-      - tune model: get training and test errors (root mean squared error)
-      - train with all data to learn U and V matrices and project them to 2D space
   - matrixFactorMethods.py
     - Miscellaneous
       - Lines 18-46 have to do with centering and projecting our U and V matrices like we’re supposed         to in the Miniproject guide. These contain the functions centerUV() and calculateProjection().
@@ -50,5 +40,15 @@ Caltech CS155 (2020WI) miniproject 2. Team 0-Loss-or-Bust. This project is to ma
       - Vtrain() in lines 74-94 with SVDofV() creates and runs the model specifically for our V to create its SVD. 
       - tryThis() is the main engine from lines 97-121 which calls the functions to create our Us and V’s, center them, create the SVD of V, calculate the 2D projection of U and V, retrieve the RMSEs. The projected U and V are returned at the end.
 
+- Off-the-shelf implementation: Surprise
+  - SurpriseMatrixFactorization.py
+    - Functions of four matrix factorization methods (SVD, PMF, SVD++ and NMF) from Surprise to 
+      - train on training data, then evaluate out-of-sample error on test data
+      - train on all data and output projected U and V in 2 dimensions
+  - matrix_factorization.py
+    - First, read in clean movie and data files
+    - Then, run each part corresponding to each matrix factorization methods to
+      - tune model: get training and test errors (root mean squared error)
+      - train with all data to learn U and V matrices and project them to 2D space
 
 # Matrix Factorization Visualizations
