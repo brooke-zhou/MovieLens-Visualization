@@ -24,8 +24,6 @@ Caltech CS155 (2020WI) miniproject 2. Team 0-Loss-or-Bust. This project is to ma
  
 # Matrix Factorization
 - Modified code from Homework 5
-- Manually implemented biased SVD 
-- Off-the-shelf implementation: Implicit
   - matrixFactorMethods.py
     - Miscellaneous
       - Lines 18-46 have to do with centering and projecting our U and V matrices like we’re supposed         to in the Miniproject guide. These contain the functions centerUV() and calculateProjection().
@@ -33,8 +31,12 @@ Caltech CS155 (2020WI) miniproject 2. Team 0-Loss-or-Bust. This project is to ma
     - HW 5 SVD implementation
       - Lines 103-120 include the SVDofV() which similarly has to do with projecting U and V by calculating the SVD of V. 
       - grad_U1(), grad_V1() (our gradient functions), get_err2() (RMSE error function), Vtrain_model(),  and originalSVD(), contained in lines 48-232, compute the SVD from homework 5 and create the 2D projections of U and V. 
+- Manually implemented biased SVD 
+  - matrixFactorMethods.py
     - Manual Bias SVD Implementation 
        - Lines 232-432 contain the functions grad_U(), grad_V(), grad_a(), grad_b() (gradient functions), get_err() (RMSE function), train_model(), naiveMinimization(), and originalSVDwithBellsWhistles(), which altogether compute the SVD from homework 5 with the additional conditions of handling user/movie biases and producing the 2D projections at the end.
+- Off-the-shelf implementation: Implicit
+  - matrixFactorMethods.py
     - implicitImplementation.py
       - Lines 9-45 includes the implementation for implicitModel, which initializes and runs the model on our datasets. 
       - Vtrain() in lines 74-94 with SVDofV() creates and runs the model specifically for our V to create its SVD. 
