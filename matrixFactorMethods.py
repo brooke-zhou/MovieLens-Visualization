@@ -72,7 +72,6 @@ def grad_V1(Vj, Yij, Ui, reg, eta):
     """
     return eta * (reg * Vj - (Ui * (Yij - np.dot(Ui, Vj))))
 
-# Culprit earlier
 def get_err2(U, V, Y, reg=0.0):
     """
     Takes as input a matrix Y of triples (i, j, Y_ij) where i is the index of a user,
@@ -86,8 +85,7 @@ def get_err2(U, V, Y, reg=0.0):
     """
     totalLength = len(Y)
     sumOfSqs = 0
-    # Do we need meanYs?
-    #meanYs = mean(Y[:, 2])
+
     # Compute squared error
     for y in Y:
         i = int(y[0])
@@ -151,7 +149,7 @@ def Vtrain_model(M, N, K, eta, reg, Y, eps=0.0001, max_epochs=300):
     for epoch in range(max_epochs):
         # Random permutation of the array
         yinds = np.random.permutation(len(Y))
-        #meanYs = mean(Y[:, 2])
+
         # For each point, perform gradient weight update.
         for ind in yinds:
             # Unpack Y_ij, i, and j.
@@ -192,7 +190,7 @@ def Vtrain_model(M, N, K, eta, reg, Y, eps=0.0001, max_epochs=300):
     return U.T, V.T, err
 
 
-def originalSVD(movieLensDataTrainPath='../data/train_clean.txt', movieLensDataTestPath='../data/test_clean.txt'):
+def originalSVD(movieLensDataTrainPath='train_clean.txt', movieLensDataTestPath='test_clean.txt'):
     ''' originalSVD() is the main engine of original SVD! It grabs the data, '''
     ''' calculates U and V from Y ~= U^TV, and then calculates SVD of V. '''
     ''' This is used to calculate the 2 dimension projection of U and V, which '''
@@ -211,24 +209,25 @@ def originalSVD(movieLensDataTrainPath='../data/train_clean.txt', movieLensDataT
     M = max(max(Y_train[:, 0]), max(Y_test[:, 0])).astype(int)  # users
     N = max(max(Y_train[:, 1]), max(Y_test[:, 1])).astype(int) + 1  # movies
 
-    K = 10
+    K = 20
     print("K: " + str(K))
     reg = 0.0
     eta = 0.03  # learning rate
 
     # Use to compute Ein and Eout
-    U, V, err = Vtrain_model(M, N, K, eta, reg, Y_train, max_epochs=0)
+    U, V, err = Vtrain_model(M, N, K, eta, reg, Y_train, max_epochs=300)
     print("In sample")
     print(err)
+    print("Out of sample")
+    print(get_err2(U.T, V.T, Y_test))
 
     U, V = centerUV(U, V)
 
     # SVD of V!
-    A, B = SVDofV(V, K=K, max_epochs=0)
+    A, B = SVDofV(V, K=K, max_epochs=300)
 
     projU, projV = calculateProjection(A, U, V)
-    print("Out of sample")
-    print(get_err2(U.T, V.T, Y_test))
+
     print(get_err2(projU.T, projV.T, Y_test))
     return projU, projV
 
@@ -385,7 +384,7 @@ def train_model(M, N, K, eta, reg, Y, eps=0.0001, max_epochs=300):
     return U, V, err, a, b
 
 
-def naiveMinimization(movieLensDataTrainPath='train_clean.txt', movieLensDataTestPath='test_clean.txt',K=10):
+def naiveMinimization(movieLensDataTrainPath='train_clean.txt', movieLensDataTestPath='test_clean.txt',K=20):
     ''' Calculate SVD using biases. The logic should be same as originalSVD(). '''
 
     # Load the train and test data sets.
@@ -400,21 +399,20 @@ def naiveMinimization(movieLensDataTrainPath='train_clean.txt', movieLensDataTes
     M = max(max(Y_train[:, 0]), max(Y_test[:, 0])).astype(int)  # users
     # add 1
     N = max(max(Y_train[:, 1]), max(Y_test[:, 1])).astype(int) + 1 # movies
-    # Ks = [10, 20, 30, 50, 100]
-    #K = 10
-    reg = 0.0
-    eta = 0.03  # learning rate
 
+    eta = 0.03  # learning rate
+    reg = 0.0
     # Train the model and return U and V.
     U, V, err, a, b = train_model(M, N, K, eta, reg, Y_train, max_epochs=300)
     # Calculate errors, training and testing.
+    print("In sample, out of sample errors")
     print(err)
     print(get_err(U, V, Y_test, a, b))
     return U.T, V.T, err, a, b, Y_test
 
 # Method 2: Original SVD with accounting for
 # biases!
-def originalSVDwithBellsWhistles(K=10):
+def originalSVDwithBellsWhistles(K=20):
     ''' This is the main engine for SVD with accounting
         for biases for each movie and user! '''
     # Make modifications to V from original minimization
@@ -435,7 +433,7 @@ def originalSVDwithBellsWhistles(K=10):
 
 # Method 3: Off the shelf and recommended method for the class.
 # This is the initial implementation as a baseline, not one we ended up using.
-def surpriseSVD(movieLensDataPath='../data/data_clean.txt'):
+def surpriseSVD(movieLensDataPath='data_clean.txt'):
     ''' Basic use of the surprise SVD algorithm. '''
     ''' Params: movieLensDataPath is the path to the movielens data we're looking at. '''
     ''' Note: replace with cleaned data. '''
@@ -469,7 +467,6 @@ def surpriseSVD(movieLensDataPath='../data/data_clean.txt'):
         accuracy.rmse(predictions, verbose=True)
     # Return U (pu) and V (qi)
     return algop, algoq
-
 
 # Original SVD
 originalSVD()
