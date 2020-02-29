@@ -401,9 +401,7 @@ def naiveMinimization(movieLensDataTrainPath='train_clean.txt', movieLensDataTes
     M = max(max(Y_train[:, 0]), max(Y_test[:, 0])).astype(int)  # users
     # add 1
     N = max(max(Y_train[:, 1]), max(Y_test[:, 1])).astype(int) + 1 # movies
-    # Ks = [10, 20, 30, 50, 100]
-    #K = 10
-    reg = 0.01
+    
     eta = 0.03  # learning rate
 
     # Train the model and return U and V.
