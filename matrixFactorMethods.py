@@ -192,7 +192,7 @@ def Vtrain_model(M, N, K, eta, reg, Y, eps=0.0001, max_epochs=300):
     return U.T, V.T, err
 
 
-def originalSVD(movieLensDataTrainPath='../data/train_clean.txt', movieLensDataTestPath='../data/test_clean.txt'):
+def originalSVD(movieLensDataTrainPath='train_clean.txt', movieLensDataTestPath='test_clean.txt'):
     ''' originalSVD() is the main engine of original SVD! It grabs the data, '''
     ''' calculates U and V from Y ~= U^TV, and then calculates SVD of V. '''
     ''' This is used to calculate the 2 dimension projection of U and V, which '''
@@ -211,24 +211,25 @@ def originalSVD(movieLensDataTrainPath='../data/train_clean.txt', movieLensDataT
     M = max(max(Y_train[:, 0]), max(Y_test[:, 0])).astype(int)  # users
     N = max(max(Y_train[:, 1]), max(Y_test[:, 1])).astype(int) + 1  # movies
 
-    K = 10
+    K = 20
     print("K: " + str(K))
     reg = 0.0
     eta = 0.03  # learning rate
 
     # Use to compute Ein and Eout
-    U, V, err = Vtrain_model(M, N, K, eta, reg, Y_train, max_epochs=0)
+    U, V, err = Vtrain_model(M, N, K, eta, reg, Y_train, max_epochs=300)
     print("In sample")
     print(err)
+    print("Out of sample")
+    print(get_err2(U.T, V.T, Y_test))
 
     U, V = centerUV(U, V)
 
     # SVD of V!
-    A, B = SVDofV(V, K=K, max_epochs=0)
+    A, B = SVDofV(V, K=K, max_epochs=300)
 
     projU, projV = calculateProjection(A, U, V)
-    print("Out of sample")
-    print(get_err2(U.T, V.T, Y_test))
+
     print(get_err2(projU.T, projV.T, Y_test))
     return projU, projV
 
@@ -385,7 +386,7 @@ def train_model(M, N, K, eta, reg, Y, eps=0.0001, max_epochs=300):
     return U, V, err, a, b
 
 
-def naiveMinimization(movieLensDataTrainPath='train_clean.txt', movieLensDataTestPath='test_clean.txt',K=10):
+def naiveMinimization(movieLensDataTrainPath='train_clean.txt', movieLensDataTestPath='test_clean.txt',K=20):
     ''' Calculate SVD using biases. The logic should be same as originalSVD(). '''
 
     # Load the train and test data sets.
@@ -402,19 +403,20 @@ def naiveMinimization(movieLensDataTrainPath='train_clean.txt', movieLensDataTes
     N = max(max(Y_train[:, 1]), max(Y_test[:, 1])).astype(int) + 1 # movies
     # Ks = [10, 20, 30, 50, 100]
     #K = 10
-    reg = 0.0
+    reg = 0.01
     eta = 0.03  # learning rate
 
     # Train the model and return U and V.
     U, V, err, a, b = train_model(M, N, K, eta, reg, Y_train, max_epochs=300)
     # Calculate errors, training and testing.
+    print("In sample, out of sample errors")
     print(err)
     print(get_err(U, V, Y_test, a, b))
     return U.T, V.T, err, a, b, Y_test
 
 # Method 2: Original SVD with accounting for
 # biases!
-def originalSVDwithBellsWhistles(K=10):
+def originalSVDwithBellsWhistles(K=20):
     ''' This is the main engine for SVD with accounting
         for biases for each movie and user! '''
     # Make modifications to V from original minimization
