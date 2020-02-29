@@ -23,7 +23,9 @@ Caltech CS155 (2020WI) miniproject 2. Team 0-Loss-or-Bust. This project is to ma
   - movies of selected genres
  
 # Matrix Factorization
-- Modified code from Homework 5, Manually implemented biased SVD and Off-the-shelf implementation: Implicit
+- Modified code from Homework 5
+- Manually implemented biased SVD 
+- Off-the-shelf implementation: Implicit
   - matrixFactorMethods.py
     - Miscellaneous
       - Lines 18-46 have to do with centering and projecting our U and V matrices like we’re supposed         to in the Miniproject guide. These contain the functions centerUV() and calculateProjection().
@@ -50,3 +52,4 @@ Caltech CS155 (2020WI) miniproject 2. Team 0-Loss-or-Bust. This project is to ma
       - train with all data to learn U and V matrices and project them to 2D space
 
 # Matrix Factorization Visualizations
+  - visualization.py
