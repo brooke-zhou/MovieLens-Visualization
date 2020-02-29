@@ -75,27 +75,27 @@ import SurpriseMatrixFactorization as sp
 #                                 lr_bi=lr_bi,
 #                                 biased=biased)
 
-# SVD++
-n_factors=20
-n_epochs=20
-lr_all=0.02
-reg_all=0.1
-Vproj, Uproj, train_err = sp.surpriseSVDpp(mode='visualization',
-                                  n_factors=n_factors, 
-                                  n_epochs=n_epochs,
-                                  lr_all=lr_all, 
-                                  reg_all=reg_all)
-
-# # PMF (SVD w/o bias)
-# n_factors=200
+# # SVD++
+# n_factors=20
 # n_epochs=20
-# lr_all=0.005
-# reg_all=0.02
-# Vproj, Uproj, train_err = sp.surprisePMF(mode='visualization',
+# lr_all=0.02
+# reg_all=0.1
+# Vproj, Uproj, train_err = sp.surpriseSVDpp(mode='visualization',
 #                                   n_factors=n_factors, 
 #                                   n_epochs=n_epochs,
 #                                   lr_all=lr_all, 
 #                                   reg_all=reg_all)
+
+# PMF (SVD w/o bias)
+n_factors=200
+n_epochs=20
+lr_all=0.005
+reg_all=0.02
+Vproj, Uproj, train_err = sp.surprisePMF(mode='visualization',
+                                  n_factors=n_factors, 
+                                  n_epochs=n_epochs,
+                                  lr_all=lr_all, 
+                                  reg_all=reg_all)
 
 # # SVD (biased)
 # n_factors=100

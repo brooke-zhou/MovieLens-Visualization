@@ -99,7 +99,7 @@ reg_all=0.02
 n_factors=30
 n_epochs=20
 lr_all=0.007
-reg_all=0.1
+reg_all=0.02
 
 # Step 1: (tune model) get training and test errors (RMSE)
 # V, U, train_err, test_err = sp.surpriseSVDpp(mode='evaluation',
@@ -111,13 +111,13 @@ reg_all=0.1
 # print('Test Error = '+str(test_err))
 
 # # Step 2: (fit model) use all data to learn U and V and get error (RMSE)
-# V, U, train_err = sp.surpriseSVDpp(mode='visualization',
-#                                  n_factors=n_factors, 
-#                                  n_epochs=n_epochs,
-#                                  lr_all=lr_all, 
-#                                  reg_all=reg_all)
-# np.save('SVDpp_U',U)
-# np.save('SVDpp_V',V)
+# Vproj, Uproj, train_err = sp.surpriseSVDpp(mode='visualization',
+#                                   n_factors=n_factors, 
+#                                   n_epochs=n_epochs,
+#                                   lr_all=lr_all, 
+#                                   reg_all=reg_all)
+# # np.save('SVDpp_U',U)
+# # np.save('SVDpp_V',V)
 # print('Training Error for all data = '+str(train_err))
 
 # TO DO Step 3: project U, V into a 2D space: (V = A Sigma B)
@@ -130,8 +130,8 @@ reg_all=0.1
 #######
 
 n_factors=100
-# n_epochs=400
-n_epochs=2
+n_epochs=400
+# n_epochs=2
 reg_pu=0.06
 reg_qi=0.06
 reg_bu=0.02
@@ -165,6 +165,6 @@ Vproj, Uproj, train_err = sp.surpriseNMF(mode='visualization',
                                 lr_bu=lr_bu,
                                 lr_bi=lr_bi,
                                 biased=biased)
-np.save('NMF_Uproj',Uproj)
-np.save('NMF_Vproj',Vproj)
+# np.save('NMF_Uproj',Uproj)
+# np.save('NMF_Vproj',Vproj)
 print('Training Error for all data = '+str(train_err))
