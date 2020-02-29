@@ -35,7 +35,7 @@ n_epochs=20
 lr_all=0.005
 reg_all=0.02
 
-Step 1: (tune model) get training and test errors (RMSE)
+# Step 1: (tune model) get training and test errors (RMSE)
 V, U, train_err, test_err = sp.surpriseSVD(mode='evaluation',
                                             n_factors=n_factors, 
                                             n_epochs=n_epochs,
