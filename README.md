@@ -28,9 +28,9 @@ Caltech CS155 (2020WI) miniproject 2. Team 0-Loss-or-Bust. This project is to ma
 3. Off-the-shelf implementation: Implicit
 4. Off-the-shelf implementation: Surprise
  - SurpriseMatrixFactorization.py
-   This file has four matrix factorization methods (SVD, PMF, SVD++ and NMF) from Surprise and can be use to 
-   (i) train on training data, then evaluate out-of-sample error on test data
-   (ii) train on all data and output projected U and V in 2 dimensions
+    - This file has four matrix factorization methods (SVD, PMF, SVD++ and NMF) from Surprise and can be use to 
+    - (i) train on training data, then evaluate out-of-sample error on test data
+    - (ii) train on all data and output projected U and V in 2 dimensions
  - matrix_factorization.py
    
 
