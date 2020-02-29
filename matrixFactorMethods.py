@@ -72,7 +72,6 @@ def grad_V1(Vj, Yij, Ui, reg, eta):
     """
     return eta * (reg * Vj - (Ui * (Yij - np.dot(Ui, Vj))))
 
-# Culprit earlier
 def get_err2(U, V, Y, reg=0.0):
     """
     Takes as input a matrix Y of triples (i, j, Y_ij) where i is the index of a user,
@@ -86,8 +85,7 @@ def get_err2(U, V, Y, reg=0.0):
     """
     totalLength = len(Y)
     sumOfSqs = 0
-    # Do we need meanYs?
-    #meanYs = mean(Y[:, 2])
+
     # Compute squared error
     for y in Y:
         i = int(y[0])
@@ -151,7 +149,7 @@ def Vtrain_model(M, N, K, eta, reg, Y, eps=0.0001, max_epochs=300):
     for epoch in range(max_epochs):
         # Random permutation of the array
         yinds = np.random.permutation(len(Y))
-        #meanYs = mean(Y[:, 2])
+
         # For each point, perform gradient weight update.
         for ind in yinds:
             # Unpack Y_ij, i, and j.
@@ -401,9 +399,9 @@ def naiveMinimization(movieLensDataTrainPath='train_clean.txt', movieLensDataTes
     M = max(max(Y_train[:, 0]), max(Y_test[:, 0])).astype(int)  # users
     # add 1
     N = max(max(Y_train[:, 1]), max(Y_test[:, 1])).astype(int) + 1 # movies
-    
-    eta = 0.03  # learning rate
 
+    eta = 0.03  # learning rate
+    reg = 0.0
     # Train the model and return U and V.
     U, V, err, a, b = train_model(M, N, K, eta, reg, Y_train, max_epochs=300)
     # Calculate errors, training and testing.
@@ -435,7 +433,7 @@ def originalSVDwithBellsWhistles(K=20):
 
 # Method 3: Off the shelf and recommended method for the class.
 # This is the initial implementation as a baseline, not one we ended up using.
-def surpriseSVD(movieLensDataPath='../data/data_clean.txt'):
+def surpriseSVD(movieLensDataPath='data_clean.txt'):
     ''' Basic use of the surprise SVD algorithm. '''
     ''' Params: movieLensDataPath is the path to the movielens data we're looking at. '''
     ''' Note: replace with cleaned data. '''
@@ -469,7 +467,6 @@ def surpriseSVD(movieLensDataPath='../data/data_clean.txt'):
         accuracy.rmse(predictions, verbose=True)
     # Return U (pu) and V (qi)
     return algop, algoq
-
 
 # Original SVD
 originalSVD()
