@@ -14,7 +14,7 @@ Caltech CS155 (2020WI) miniproject 2. Team 0-Loss-or-Bust. This project is to ma
 - Then, call function clean_data to re-index movies in a given data file
 
 # Basic Visualizations
-- All of code used to generate basic visualizations are in basic_visualizations.py
+- All code used to generate basic visualizations are in basic_visualizations.py
 - First, read in clean movie and data files
 - Then, run each part of the file to make visualizations of 
   - all movies 
@@ -34,7 +34,7 @@ Caltech CS155 (2020WI) miniproject 2. Team 0-Loss-or-Bust. This project is to ma
   - matrix_factorization.py
     - First, read in clean movie and data files
     - Then, run each part corresponding to each matrix factorization methods to
-      - Tune model: get training and test errors (root mean squared error)
-      - Train with all data to learn U and V matrices and project them to 2D space
+      - tune model: get training and test errors (root mean squared error)
+      - train with all data to learn U and V matrices and project them to 2D space
 
 # Matrix Factorization Visualizations
