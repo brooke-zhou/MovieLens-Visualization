@@ -45,8 +45,8 @@ Caltech CS155 (2020WI) miniproject 2. Team 0-Loss-or-Bust. This project is to ma
       - grad_U1(), grad_V1() (our gradient functions), get_err2() (RMSE error function), Vtrain_model(),  and originalSVD(), contained in lines 48-232, handle computing the SVD from homework 5 and creating the 2D projections of U and V. 
     - Manual Bias SVD Implementation 
 Lines 232-432 contain the functions grad_U(), grad_V(), grad_a(), grad_b() (gradient function), get_err() (RMSE function), train_model(), naiveMinimization(), and originalSVDwithBellsWhistles(), which handle computing the SVD from homework 5 with the additional condition of handling user/movie biases.
- - implicitImplementation.py
-    - Lines 9-45 includes the implementation for implicitModel, which initializes and runs the model on our datasets. 
+  - implicitImplementation.py
+     - Lines 9-45 includes the implementation for implicitModel, which initializes and runs the model on our datasets. 
     - Vtrain() in lines 74-94 with SVDofV() creates and runs the model specifically for our V to create its SVD. 
     - tryThis() is the main engine from lines 97-121 which calls the functions to create our Us and V’s, center them, create the SVD of V, calculate the 2D projection of U and V, retrieve the error. The projected U and V are returned at the end.
 
