@@ -64,9 +64,10 @@ def visualize():
     #########################################@@#
     # Used to generate file name and plot titles 
     f_end = "SVD"
-    t_end = " (SVD With Bias)"
-    Uproj, Vproj = factor.originalSVDwithBellsWhistles()
+    t_end = " (SVD Without Bias)"
+    #Uproj, Vproj = factor.originalSVDwithBellsWhistles()
     #Uproj, Vproj = implicit.tryThis()
+    Uproj, Vproj = factor.originalSVD()
     # # NMF
     n_factors=100
     n_epochs=400
@@ -125,7 +126,7 @@ def visualize():
     ##############################
     # Visualize top 10 in genres #
     ##############################
-    genres = ["Comedy", "Musical", "Sci-Fi"]
+    genres = ["Comedy", "Musical", "Horror"]
     for genre in genres:
         genre_movies = movies.loc[movies[genre] == 1]
         genre_movie_id_list = genre_movies['Movie Id'].tolist()           

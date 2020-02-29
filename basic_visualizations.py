@@ -65,8 +65,26 @@ plt.text(2.5, 33, 'Average={:.2f}'.format(average_rating_of_all_movies),
 plt.title('Histogram of All ratings in the MovieLens Dataset')
 plt.xlabel('Rating')
 plt.ylabel('Percentage')
-plt.show()
-# plt.savefig()
+# plt.show()
+plt.savefig('../plots/basic/all_ratings1.png')
+
+plt.figure() 
+labels = ['1-star','2-star','3-star','4-star','5-star'] #定义标签
+sizes = count_ratings #每块值
+colors = ['red','yellowgreen','lightskyblue','yellow']
+explode = (0,0,0,0) 
+patches,text1,text2 = plt.pie(sizes,
+                      # explode=explode,
+                      labels=labels,
+                      # colors=colors,
+                      autopct = '%3.2f%%', #数值保留固定小数位
+                      shadow = True, #无阴影设置
+                      startangle =90, #逆时针起始角度设置
+                      pctdistance = 0.6) #数值距圆心半径倍数距离
+
+plt.axis('equal')
+# plt.show()
+plt.savefig('../plots/basic/all_ratings3.png')
 
 # create an array for [ID, avg_rating, n_ratings]
 id_rating_n = np.zeros([len(movie_rating),3])
@@ -88,8 +106,8 @@ plt.text(3.2, 1.0, 'Average={:.2f}'.format(average_rating_of_all_movies),
 plt.title('Histogram of All ratings in the MovieLens Dataset')
 plt.xlabel('Rating')
 # plt.ylabel('Percentage')
-plt.show()
-# plt.savefig()
+# plt.show()
+plt.savefig('../plots/basic/all_ratings2.png')
 
 ##################################################
 #   All ratings of the ten most popular movies   #
@@ -134,8 +152,8 @@ plt.text(100, 400, '10th Popular Movie Has {:} Ratings'.format(int(tenth_populat
 plt.title('Histogram of Popularity in the MovieLens Dataset')
 plt.xlabel('Number of Movies')
 plt.ylabel('Number of Ratings')
-plt.show()
-# plt.savefig()
+# plt.show()
+plt.savefig('../plots/basic/pop1.png')
 
 # boxplot of all ratings
 plt.figure()
@@ -148,8 +166,8 @@ plt.text(1.05, 400, '10th Popular Movie \nHas {:} Ratings'.format(int(tenth_popu
 plt.title('Boxplot of Popularity in the MovieLens Dataset')
 plt.xticks([])
 plt.ylabel('Number of Ratings')
-plt.show()
-# plt.savefig()
+# plt.show()
+plt.savefig('../plots/basic/pop2.png')
 
 # get an array of ratings of 10 most popular movies [ID, #1, #2, #3, #4, $5]
 popular_movie_rating = np.zeros([10,6])
@@ -173,8 +191,8 @@ plt.text(2.5, 33, 'Average={:.2f}'.format(average_rating_of_popular_movies),
 plt.title('Histogram of Ratings of 10 Most Popupar Movies')
 plt.xlabel('Rating')
 plt.ylabel('Percentage')
-plt.show()
-# plt.savefig()
+# plt.show()
+plt.savefig('../plots/basic/pop3.png')
 
 avg_rating_for_each_popular_movie = np.zeros(len(popular_movie_rating))
 rating_array = np.array([1,2,3,4,5])
@@ -210,8 +228,8 @@ plt.scatter(np.ones(10),avg_rating_for_each_popular_movie,c='r',edgecolor='k')
 plt.title('Boxplot of 10 Most Popular Movies')
 plt.xticks([])
 plt.ylabel('Average Rating')
-plt.show()
-# plt.savefig()
+# plt.show()
+plt.savefig('../plots/basic/pop4.png')
 
 
 ##########################################
@@ -235,8 +253,8 @@ plt.scatter(np.linspace(1,50,50),avg_rating_for_each_movie[:50,1],
 plt.title('Average Ratings of Top 50 Movies')
 plt.xlabel('Rating Rank')
 plt.ylabel('Average Rating')
-plt.show()
-# plt.savefig()
+# plt.show()
+plt.savefig('../plots/basic/best1.png')
 
 fig, ax1 = plt.subplots()
 plt.title('Average Ratings and Number of Ratings of Top 50 Movies')
@@ -254,8 +272,8 @@ ax2.set_ylim([0,2000])
 ax2.bar(np.linspace(1,50,50),avg_rating_for_each_movie[:50,2])
 ax2.tick_params(axis='y', labelcolor=color)
 fig.tight_layout()  # otherwise the right y-label is slightly clipped
-plt.show()
-# plt.savefig()
+# plt.show()
+plt.savefig('../plots/basic/best2.png')
 
 # select the best 10 movies
 best_movies = np.empty((0,3),int)
@@ -270,14 +288,16 @@ for movie in avg_rating_for_each_movie:
 
 # plot the ratings of the best movies and their popularity
 plt.figure()
-plt.scatter(np.linspace(1,10,10),best_movies[:,1],
-            s=best_movies[:,2],edgecolor='k')
+sct = plt.scatter(np.linspace(1,10,10),best_movies[:,1],
+            s=best_movies[:,2],edgecolor='k',alpha=0.6)
 plt.title('Average Ratings of Top 10 Movies\n(Threshold={:})'.
           format(n_rating_threshold))
 plt.xlabel('Rating Rank')
 plt.ylabel('Average Rating')
-plt.show()
-# plt.savefig()
+handles, labels = sct.legend_elements(prop="sizes",num=4, color='tab:blue',alpha=0.6)
+legend2 = plt.legend(handles, labels, loc="upper right", title="Popularity")
+# plt.show()
+plt.savefig('../plots/basic/best3.png')
 
 fig, ax1 = plt.subplots()
 plt.title('Average Ratings and Number of Ratings of Top 10 Movies\n(Threshold={:})'.
@@ -295,8 +315,8 @@ ax2.set_ylim([0,1200])
 ax2.bar(np.linspace(1,10,10),best_movies[:,2])
 ax2.tick_params(axis='y', labelcolor=color)
 fig.tight_layout()  # otherwise the right y-label is slightly clipped
-plt.show()
-# plt.savefig()
+# plt.show()
+plt.savefig('../plots/basic/best4.png')
 
 
 # output titles of 10 most popular movies
@@ -342,11 +362,12 @@ plt.axvline(x=average_rating_of_best_movies,linewidth=4, color='r')
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 plt.text(2.5, 33, 'Average={:.2f}'.format(average_rating_of_best_movies), 
          fontsize=14, verticalalignment='top', bbox=props)
-plt.title('Histogram of Ratings of 10 Best Movies')
+plt.title('Histogram of Ratings of 10 Best Movies\n(Threshold={:})'.
+          format(n_rating_threshold))
 plt.xlabel('Rating')
 plt.ylabel('Percentage')
-plt.show()
-# plt.savefig()
+# plt.show()
+plt.savefig('../plots/basic/best5.png')
 
 avg_rating_for_each_best_movie = np.zeros(len(best_movie_rating))
 rating_array = np.array([1,2,3,4,5])
@@ -378,8 +399,8 @@ plt.scatter(np.ones(10),avg_rating_for_each_best_movie,c='r',edgecolor='k')
 plt.title('Boxplot of 10 Best Movies')
 plt.xticks([])
 plt.ylabel('Average Rating')
-plt.show()
-# plt.savefig()
+# plt.show()
+plt.savefig('../plots/basic/best6.png')
 
 
 # boxplot of best and most popular movies
@@ -390,8 +411,8 @@ plt.boxplot([avg_rating_for_each_best_movie, avg_rating_for_each_popular_movie])
 plt.title('Boxplot of 10 Best Movies and 10 Most Popular Movies')
 plt.xticks(np.arange(1,3), ('Best', 'Most Popular'))
 plt.ylabel('Average Rating')
-plt.show()
-# plt.savefig()
+# plt.show()
+plt.savefig('../plots/basic/best7.png')
 
 
 ###############################################
@@ -405,8 +426,9 @@ plt.show()
 #               Sci-Fi, Thriller, War, Western]
 ###############################################
 
-genres = ['Comedy','Musical']
-n_bins = [30,10]
+genres = ['Comedy','Musical','Horror']
+n_bins = [30,10,20]
+genre_ratings= []
 
 for i_genre,genre in enumerate(genres):
     
@@ -433,8 +455,8 @@ for i_genre,genre in enumerate(genres):
               format(genre))
     plt.xlabel('Rating')
     plt.ylabel('Percentage')
-    plt.show()
-    # plt.savefig()
+    # plt.show()
+    plt.savefig('../plots/basic/genre_'+genre+'.png')
     
     # create an array for [ID, avg_rating, n_ratings]
     id_rating_n = np.zeros([len(genre_movie_rating),3])
@@ -457,6 +479,16 @@ for i_genre,genre in enumerate(genres):
               format(genre))
     plt.xlabel('Rating')
     # plt.ylabel('Percentage')
-    plt.show()
-    # plt.savefig()
+    # plt.show()
+    plt.savefig(('../plots/basic/genre2_'+genre+'.png'))
     
+    genre_ratings.append(id_rating_n[:,1])
+    
+# boxplot of best and most popular movies
+plt.figure()
+plt.boxplot([genre_ratings[0], genre_ratings[1], genre_ratings[2]])
+plt.title('Boxplot of 3 Genres of Movies')
+plt.xticks(np.arange(1,4), (genres[0],genres[1],genres[2]))
+plt.ylabel('Average Rating')
+# plt.show()
+plt.savefig('../plots/basic/genre_box.png')
