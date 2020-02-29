@@ -17,10 +17,10 @@ Caltech CS155 (2020WI) miniproject 2. Team 0-Loss-or-Bust. This project is to ma
 - All of code used to generate basic visualizations are in basic_visualizations.py
 - First, read in clean movie and data files
 - Then, run each part of the file to make visualizations of 
-  -- all movies 
-  -- most popula movies
-  -- best movies 
-  -- movies of selected genres
+  - all movies 
+  - most popula movies
+  - best movies 
+  - movies of selected genres
  
 # Matrix Factorization
 1. Modified code from Homework 5
