@@ -1,27 +1,26 @@
 # MovieLens-Visualization
-Caltech CS155 (2020WI) miniproject 2. Team 0-Loss-or-Bust\\
-This project is to make visualizations of movies in the MovieLens dataset. \\
+Caltech CS155 (2020WI) miniproject 2. Team 0-Loss-or-Bust. This project is to make visualizations of movies in the MovieLens dataset. 
 
 # Prerequisites
-pandas 1.0.0. or higher\\
-numpy 1.18.1 or higher\\
-matplotlib 3.1.3 or higher\\
-implicit 0.4.0 or higher\\
-surprise x.x.x
+- pandas 1.0.0. or higher
+- numpy 1.18.1 or higher
+- matplotlib 3.1.3 or higher
+- Implicit 0.4.0 or higher
+- Surprise x.x.x
 
 # Data cleaning
-All related functions are defined in data_cleaning.py\\
-First, call function clean_movies to detect and remove duplicate movies from movies.txt\\
-Then, call function clean_data to re-index movies in a given data file\\
+- All related functions are defined in data_cleaning.py
+- First, call function clean_movies to detect and remove duplicate movies from movies.txt
+- Then, call function clean_data to re-index movies in a given data file
 
 # Basic Visualizations
-All of code used to generate basic visualizations are in basic_visualizations.py\\
-First, read in clean movie and data files\\
-Then, run each part of the file to make visualizations of \\
-  all movies \\
-  most popula movies\\
-  best movies \\
-  movies of selected genres\\
+All of code used to generate basic visualizations are in basic_visualizations.py
+First, read in clean movie and data files
+Then, run each part of the file to make visualizations of 
+  all movies 
+  most popula movies
+  best movies 
+  movies of selected genres
  
 # Matrix Factorization
 1. Modified code from Homework 5
